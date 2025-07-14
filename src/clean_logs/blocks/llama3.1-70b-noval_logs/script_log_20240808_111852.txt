@@ -1,0 +1,754 @@
+
+AutoToS prompt:
+
+I am playing with a set of blocks where I need to arrange the blocks into stacks. Here are the actions I can do
+   Pick up a block from the table
+   Put down a block on the table
+   Unstack a block from on top of another block
+   Stack a block on top of another block
+
+   I have the following restrictions on my actions:
+   I can only pick up or unstack one block at a time.
+   I can only pick up or unstack a block if my hand is empty.
+   I can only pick up a block if the block is on the table and the block is clear. A block is clear if the block has no other blocks on top of it and if the block is not picked up.
+   I can only unstack a block from on top of another block if the block I am unstacking was really on top of the other block.
+   I can only unstack a block from on top of another block if the block I am unstacking is clear.
+   Once I pick up a block, I am holding the block and it is no longer clear and no longer on the table. 
+   Once I unstack from on top of another block, I am holding the block and it is no longer clear. Instead, the other block becomes clear.   
+
+   I can only put down a block that I am holding.
+   I can only stack a block on top of another block if I am holding the block being stacked.
+   I can only stack a block on top of another block if the block onto which I am stacking the block is clear.
+   Once I put down a block, my hand becomes empty, the block becomes clear, and it is now on the table.
+   Once I stack a block on top of another block, the block on top becomes clear and the block under it is no longer clear.
+If a state is defined by a dictionary of following predicates "clear block", "on-table block", "arm-empty", "holding block", and "on block1 block2", how are successor states defined? 
+Here is an example of the initial state:
+Init: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+Please provide only the Python code for the successor function that returns a list of successor states.
+
+Model response:
+Here is the Python code for the successor function:
+Python
+```
+def successor(state):
+    successors = []
+    
+    # Pick up a block from the table
+    for block in state['on-table']:
+        if block in state['clear']:
+            new_state = state.copy()
+            new_state['on-table'].remove(block)
+            new_state['clear'].remove(block)
+            new_state['holding'] = block
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Put down a block on the table
+    if not state['arm-empty']:
+        new_state = state.copy()
+        new_state['on-table'].append(state['holding'])
+        new_state['clear'].append(state['holding'])
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        successors.append(new_state)
+    
+    # Unstack a block from on top of another block
+    for block1, block2 in state['on']:
+        if block1 in state['clear']:
+            new_state = state.copy()
+            new_state['on'].remove((block1, block2))
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            new_state['holding'] = block1
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Stack a block on top of another block
+    if not state['arm-empty']:
+        for block in state['clear']:
+            new_state = state.copy()
+            new_state['on'].append((state['holding'], block))
+            new_state['clear'].remove(block)
+            new_state['clear'].append(state['holding'])
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            successors.append(new_state)
+    
+    return successors
+```
+This function generates all possible successor states by applying each action to the current state, while respecting the given restrictions. Note that this implementation assumes that the input state is valid and does not contain any contradictions
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state. The goal specifies a partial state, the facts that must be true in any full goal state. Assume that the goal configuration is provided in the same dictionary format. 
+Here's an example goal specification:
+Goal: {'clear': [], 'on-table': [], 'on': [('b', 'c'), ('d', 'b')]}
+
+Model response:
+Here is the Python code that tests whether a state is a goal state:
+Python
+```
+def is_goal_state(state, goal):
+    for key, value in goal.items():
+        if key == 'on':
+            for block1, block2 in value:
+                if (block1, block2) not in state['on']:
+                    return False
+            for block1, block2 in state['on']:
+                if (block1, block2) not in value:
+                    return False
+        elif key == 'clear':
+            for block in value:
+                if block not in state['clear']:
+                    return False
+            for block in state['clear']:
+                if block not in value:
+                    return False
+        elif key == 'on-table':
+            for block in value:
+                if block not in state['on-table']:
+                    return False
+            for block in state['on-table']:
+                if block not in value:
+                    return False
+        elif key == 'arm-empty':
+            if state['arm-empty'] != goal['arm-empty']:
+                return False
+        elif key == 'holding':
+            if state['holding'] != goal['holding']:
+                return False
+    return True
+```
+This function checks if the given state satisfies all the conditions specified in the goal. It returns True if the state is a goal state, and False otherwise. Note that this implementation assumes that the input state and goal are valid and do not contain any contradictions
+Goal Iteration 1 - Goal Soundness Test
+
+AutoToS prompt:
+The goal test function failed on the following input state {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}, incorrectly reporting it as a non-goal state.
+First think step by step what it means for a state to be a goal state in this domain. Then think through in words why the goal test function incorrectly reported input state: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]} as a non-goal state. Now, revise the goal test function and ensure it returns true for the input state.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+Goal: {'clear': [], 'on-table': [], 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+
+Model response:
+A state is a goal state if it satisfies all the conditions specified in the goal. In this domain, the goal specifies a partial state, and a state is a goal state if it matches the goal in all the specified aspects.
+The goal test function incorrectly reported the input state as a non-goal state because it was checking for exact matches between the state and the goal, rather than checking if the state satisfies the conditions specified in the goal. Specifically, it was checking if the 'clear' and 'on-table' lists in the state were empty, rather than checking if all the blocks mentioned in the 'on' list in the goal were actually on top of each other in the state.
+Here is the revised goal test function:
+Python
+```
+def is_goal_state(state, goal):
+    for key, value in goal.items():
+        if key == 'on':
+            for block1, block2 in value:
+                if (block1, block2) not in state['on']:
+                    return False
+        elif key == 'clear':
+            for block in value:
+                if block not in state['clear']:
+                    return False
+        elif key == 'on-table':
+            for block in value:
+                if block not in state['on-table']:
+                    return False
+        elif key == 'arm-empty':
+            if state['arm-empty'] != goal['arm-empty']:
+                return False
+        elif key == 'holding':
+            if state['holding'] != goal['holding']:
+                return False
+    return True
+```
+This revised function only checks if the state satisfies the conditions specified in the goal, rather than checking for exact matches. It returns True for the input state {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]} and the goal {'clear': [], 'on-table': [], 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}, as expected
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+Successor Iteration 1
+
+AutoToS prompt:
+Input state should not change as a result of applying the successor function.
+State before successor function applied: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+State after successor function applied: {'clear': ['a'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('c', 'd')]}
+Let's think step by step. First, think of the possible reasons why the input state may change as a result of applying the successor function, such as the use of shallow copy.
+Then, provide the complete Python code for the revised successor function that returns a list of successor states and ensure it does not change the input state.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Model response:
+The input state may change as a result of applying the successor function because the successor function is modifying the original state dictionary. This is likely due to the use of shallow copies, where the function is creating new lists but still referencing the same original dictionary.
+Here is the revised successor function that returns a list of successor states without modifying the input state:
+Python
+```
+def successor(state):
+    successors = []
+    
+    # Create a deep copy of the state to avoid modifying the original state
+    state_copy = {
+        'clear': state['clear'].copy(),
+        'on-table': state['on-table'].copy(),
+        'arm-empty': state['arm-empty'],
+        'holding': state['holding'],
+        'on': state['on'].copy()
+    }
+    
+    # Pick up a block from the table
+    for block in state_copy['on-table']:
+        if block in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on-table'].remove(block)
+            new_state['clear'].remove(block)
+            new_state['holding'] = block
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Put down a block on the table
+    if not state_copy['arm-empty']:
+        new_state = state_copy.copy()
+        new_state['on-table'].append(state_copy['holding'])
+        new_state['clear'].append(state_copy['holding'])
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        successors.append(new_state)
+    
+    # Unstack a block from on top of another block
+    for block1, block2 in state_copy['on']:
+        if block1 in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on'].remove((block1, block2))
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            new_state['holding'] = block1
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Stack a block on top of another block
+    if not state_copy['arm-empty']:
+        for block in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on'].append((state_copy['holding'], block))
+            new_state['clear'].remove(block)
+            new_state['clear'].append(state_copy['holding'])
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            successors.append(new_state)
+    
+    return successors
+```
+This revised function creates a deep copy of the input state at the beginning, and then modifies the copy to generate successor states. This ensures that the input state remains unchanged
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Iteration 2
+
+AutoToS prompt:
+Successor function when run on the state {'clear': ['a'], 'on-table': ['d'], 'arm-empty': False, 'holding': 'b', 'on': [('a', 'c'), ('c', 'd')]} failed to produce all successors.
+Missing successors are: [{'clear': ['a', 'b'], 'on-table': ['d', 'b'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('c', 'd')]}, {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('c', 'd'), ('b', 'a')]}]
+First think step by step why the successor function failed to produce all successors of the state.
+Then, fix the successor function.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Model response:
+The successor function failed to produce all successors because it was not considering all possible actions that can be taken in the given state. Specifically, it was not handling the case where the arm is holding a block and can be put down on the table or stacked on top of another block.
+Here is the revised successor function that produces all successors:
+Python
+```
+def successor(state):
+    successors = []
+    
+    state_copy = {
+        'clear': state['clear'].copy(),
+        'on-table': state['on-table'].copy(),
+        'arm-empty': state['arm-empty'],
+        'holding': state['holding'],
+        'on': state['on'].copy()
+    }
+    
+    # Pick up a block from the table
+    for block in state_copy['on-table']:
+        if block in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on-table'].remove(block)
+            new_state['clear'].remove(block)
+            new_state['holding'] = block
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Put down a block on the table
+    if not state_copy['arm-empty']:
+        new_state = state_copy.copy()
+        new_state['on-table'].append(state_copy['holding'])
+        new_state['clear'].append(state_copy['holding'])
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        successors.append(new_state)
+    
+    # Unstack a block from on top of another block
+    for block1, block2 in state_copy['on']:
+        if block1 in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on'].remove((block1, block2))
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            new_state['holding'] = block1
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Stack a block on top of another block
+    if not state_copy['arm-empty']:
+        for block in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on'].append((state_copy['holding'], block))
+            new_state['clear'].remove(block)
+            new_state['clear'].append(state_copy['holding'])
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            successors.append(new_state)
+    
+    # Put down a block on another block
+    if not state_copy['arm-empty']:
+        for block in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on'].append((state_copy['holding'], block))
+            new_state['clear'].append(state_copy['holding'])
+            new_state['clear'].remove(block)
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            successors.append(new_state)
+    
+    return successors
+```
+This revised function adds an additional case to handle putting down a block on another block, which was missing in the previous implementation
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Iteration 3
+
+AutoToS prompt:
+Successor function when run on the state {'clear': ['a'], 'on-table': ['d'], 'arm-empty': False, 'holding': 'b', 'on': [('a', 'c'), ('c', 'd')]} failed to produce all successors.
+Missing successors are: [{'clear': ['a', 'b'], 'on-table': ['d', 'b'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('c', 'd')]}, {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('c', 'd'), ('b', 'a')]}]
+First think step by step why the successor function failed to produce all successors of the state.
+Then, fix the successor function.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Model response:
+
+Successor Iteration 4
+
+AutoToS prompt:
+Could not extract the function from your response. Please provide only the complete Python function that returns a list of successor states for a state.
+Model response:
+
+Successor Iteration 5
+
+AutoToS prompt:
+Could not extract the function from your response. Please provide only the complete Python function that returns a list of successor states for a state.
+Model response:
+The successor function failed to produce all successors because it was not handling the case where the arm is holding a block and can be put down on the table, and it was not handling the case where the arm is holding a block and can be stacked on top of another block.
+Here is the revised successor function that produces all successors:
+Python
+```
+def successor(state):
+    successors = []
+    
+    state_copy = {
+        'clear': state['clear'].copy(),
+        'on-table': state['on-table'].copy(),
+        'arm-empty': state['arm-empty'],
+        'holding': state['holding'],
+        'on': state['on'].copy()
+    }
+    
+    # Pick up a block from the table
+    for block in state_copy['on-table']:
+        if block in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on-table'].remove(block)
+            new_state['clear'].remove(block)
+            new_state['holding'] = block
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Put down a block on the table
+    if not state_copy['arm-empty']:
+        new_state = state_copy.copy()
+        new_state['on-table'].append(state_copy['holding'])
+        new_state['clear'].append(state_copy['holding'])
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        successors.append(new_state)
+    
+    # Unstack a block from on top of another block
+    for block1, block2 in state_copy['on']:
+        if block1 in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on'].remove((block1, block2))
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            new_state['holding'] = block1
+            new_state['arm-empty'] = False
+            successors.append(new_state)
+    
+    # Stack a block on top of another block
+    if not state_copy['arm-empty']:
+        for block in state_copy['clear']:
+            new_state = state_copy.copy()
+            new_state['on'].append((state_copy['holding'], block))
+            new_state['clear'].remove(block)
+            new_state['clear'].append(state_copy['holding'])
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            successors.append(new_state)
+    
+    # Put down a block on another block
+    if not state_copy['arm-empty']:
+        for block in state_copy['clear']:
+            new_state1 = state_copy.copy()
+            new_state1['on'].append((state_copy['holding'], block))
+            new_state1['clear'].append(state_copy['holding'])
+            new_state1['clear'].remove(block)
+            new_state1['holding'] = None
+            new_state1['arm-empty'] = True
+            successors.append(new_state1)
+            
+            new_state2 = state_copy.copy()
+            new_state2['clear'].append(state_copy['holding'])
+            new_state2['on-table'].append(state_copy['holding'])
+            new_state2['holding'] = None
+            new_state2['arm-empty'] = True
+            successors.append(new_state2)
+    
+    return successors
+```
+This revised function adds two additional cases to handle putting down a block on another block and putting down a block on the table, which were missing in the previous implementation
+Successor Iteration 6
+
+AutoToS prompt:
+Successor function execution took too long.
+Please provide a different implementation of the successor function.
+Keep the same function signature.
+
+Model response:
+Here's a different implementation of the successor function that should be more efficient:
+Python
+```
+def successor(state):
+    successors = []
+    
+    # Pick up a block from the table
+    for block in state['on-table']:
+        if block in state['clear']:
+            successors.append({
+                'clear': [b for b in state['clear'] if b != block],
+                'on-table': [b for b in state['on-table'] if b != block],
+                'arm-empty': False,
+                'holding': block,
+                'on': state['on'].copy()
+            })
+    
+    # Put down a block on the table
+    if not state['arm-empty']:
+        successors.append({
+            'clear': state['clear'] + [state['holding']],
+            'on-table': state['on-table'] + [state['holding']],
+            'arm-empty': True,
+            'holding': None,
+            'on': state['on'].copy()
+        })
+    
+    # Unstack a block from on top of another block
+    for block1, block2 in state['on']:
+        if block1 in state['clear']:
+            successors.append({
+                'clear': [b for b in state['clear'] if b != block1] + [block2],
+                'on-table': state['on-table'].copy(),
+                'arm-empty': False,
+                'holding': block1,
+                'on': [(b1, b2) for b1, b2 in state['on'] if (b1, b2) != (block1, block2)]
+            })
+    
+    # Stack a block on top of another block
+    if not state['arm-empty']:
+        for block in state['clear']:
+            successors.append({
+                'clear': [b for b in state['clear'] if b != block] + [state['holding']],
+                'on-table': state['on-table'].copy(),
+                'arm-empty': True,
+                'holding': None,
+                'on': state['on'].copy() + [(state['holding'], block)]
+            })
+    
+    return successors
+```
+This implementation avoids creating unnecessary copies of the state dictionary and instead uses list comprehensions to create new lists for the successor states. This should improve the performance of the successor function
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Failed to validate the plan for problem blocks_instances/instance-0.pddl
+['(unstack b a)', '(put-down b)', '(unstack a c)', '(unstack c d)', '(put-down c)', '(pick-up b)', '(stack b c)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-100.pddl
+['(unstack a c)', '(put-down a)', '(unstack c d)', '(unstack d b)', '(put-down d)', '(pick-up b)', '(stack b d)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-101.pddl
+['(unstack c a)', '(put-down c)', '(unstack a b)', '(unstack b d)', '(put-down b)', '(pick-up d)', '(stack d c)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-106.pddl
+['(unstack c a)', '(unstack a d)', '(unstack d b)', '(put-down d)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-107.pddl
+['(unstack b c)', '(put-down b)', '(unstack d a)', '(pick-up a)', '(stack a c)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-109.pddl
+['(unstack c a)', '(unstack a d)', '(put-down a)', '(pick-up b)', '(stack b a)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-112.pddl
+['(unstack a d)', '(unstack d c)', '(stack d b)', '(pick-up c)', '(stack c d)']
+Failed to validate the plan for problem blocks_instances/instance-114.pddl
+['(unstack c d)', '(unstack d b)', '(put-down d)', '(unstack b a)', '(put-down b)', '(pick-up d)', '(stack d a)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-122.pddl
+['(unstack b d)', '(unstack d c)', '(put-down d)', '(unstack c a)', '(put-down c)', '(pick-up d)', '(stack d c)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-125.pddl
+['(unstack a b)', '(stack a d)', '(unstack b c)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-126.pddl
+['(unstack b a)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-129.pddl
+['(unstack d c)', '(put-down d)', '(unstack c b)', '(unstack b a)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-13.pddl
+['(unstack c b)', '(unstack d a)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-131.pddl
+['(unstack a c)', '(unstack c d)', '(put-down c)', '(unstack d b)', '(put-down d)', '(pick-up c)', '(stack c d)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-134.pddl
+['(unstack d b)', '(unstack b c)', '(put-down b)', '(unstack c a)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-136.pddl
+['(unstack a b)', '(put-down a)', '(unstack d c)', '(pick-up c)', '(stack c b)', '(pick-up a)', '(stack a c)']
+Failed to validate the plan for problem blocks_instances/instance-137.pddl
+['(unstack a c)', '(unstack b d)', '(put-down b)', '(pick-up c)', '(stack c b)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-139.pddl
+['(pick-up a)', '(stack a d)', '(unstack b c)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-141.pddl
+['(unstack b a)', '(unstack d c)', '(put-down d)', '(pick-up c)', '(stack c a)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-144.pddl
+['(unstack a b)', '(unstack b d)', '(put-down b)', '(unstack d c)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-148.pddl
+['(unstack d b)', '(unstack b a)', '(put-down b)', '(unstack a c)', '(put-down a)', '(pick-up c)', '(stack c b)', '(pick-up a)', '(stack a c)']
+Failed to validate the plan for problem blocks_instances/instance-150.pddl
+['(unstack b d)', '(unstack d c)', '(put-down d)', '(pick-up c)', '(stack c a)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-155.pddl
+['(unstack a d)', '(put-down a)', '(unstack d b)', '(unstack b c)', '(put-down b)', '(pick-up a)', '(stack a c)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-156.pddl
+['(unstack a d)', '(put-down a)', '(pick-up b)', '(stack b a)', '(unstack d c)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-160.pddl
+['(unstack a b)', '(put-down a)', '(unstack b d)', '(unstack d c)', '(put-down d)', '(pick-up c)', '(stack c a)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-163.pddl
+['(unstack c a)', '(put-down c)', '(unstack a d)', '(pick-up c)', '(stack c d)']
+Failed to validate the plan for problem blocks_instances/instance-17.pddl
+['(unstack a d)', '(unstack d c)', '(put-down d)', '(pick-up c)', '(stack c d)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-172.pddl
+['(unstack a c)', '(put-down a)', '(unstack c d)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-175.pddl
+['(unstack c a)', '(unstack d b)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-18.pddl
+['(unstack d b)', '(put-down d)', '(unstack b a)', '(put-down b)', '(unstack a c)', '(pick-up c)', '(stack c d)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-183.pddl
+['(unstack b c)', '(unstack c d)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-184.pddl
+['(unstack d b)', '(unstack a c)', '(stack a b)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-186.pddl
+['(unstack b c)', '(put-down b)', '(unstack c d)', '(unstack d a)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-188.pddl
+['(unstack b c)', '(unstack c a)', '(pick-up d)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-194.pddl
+['(unstack b a)', '(stack b d)', '(unstack a c)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-196.pddl
+['(unstack b d)', '(unstack d c)', '(put-down d)', '(pick-up a)', '(stack a d)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-197.pddl
+['(unstack c b)', '(put-down c)', '(unstack b d)', '(pick-up a)', '(stack a d)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-198.pddl
+['(unstack a b)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-199.pddl
+['(unstack b d)', '(unstack d a)', '(put-down d)', '(unstack a c)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-2.pddl
+['(unstack d c)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-203.pddl
+['(unstack d c)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-208.pddl
+['(unstack d c)', '(put-down d)', '(unstack c a)', '(pick-up d)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-209.pddl
+['(unstack c b)', '(put-down c)', '(unstack b a)', '(unstack a d)', '(put-down a)', '(pick-up d)', '(stack d a)', '(pick-up c)', '(stack c d)']
+Failed to validate the plan for problem blocks_instances/instance-210.pddl
+['(unstack a d)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-216.pddl
+['(unstack d b)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-228.pddl
+['(unstack b d)', '(unstack c a)', '(stack c d)']
+Failed to validate the plan for problem blocks_instances/instance-229.pddl
+['(unstack d b)', '(put-down d)', '(unstack b c)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-232.pddl
+['(unstack d a)', '(pick-up c)', '(stack c a)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-234.pddl
+['(unstack a d)', '(put-down a)', '(unstack d b)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-242.pddl
+['(unstack b a)', '(put-down b)', '(unstack a d)', '(put-down a)', '(unstack d c)', '(pick-up b)', '(stack b c)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-247.pddl
+['(unstack c a)', '(put-down c)', '(unstack a d)', '(unstack d b)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-250.pddl
+['(unstack b c)', '(put-down b)', '(unstack c d)', '(put-down c)', '(unstack d a)', '(pick-up c)', '(stack c a)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-261.pddl
+['(unstack c a)', '(unstack a d)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-27.pddl
+['(unstack b d)', '(unstack c a)', '(put-down c)', '(pick-up a)', '(stack a c)', '(pick-up d)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-281.pddl
+['(unstack b c)', '(put-down b)', '(pick-up d)', '(stack d b)', '(unstack c a)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-292.pddl
+['(unstack a d)', '(put-down a)', '(unstack d b)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-294.pddl
+['(unstack c d)', '(put-down c)', '(unstack d a)', '(unstack a b)', '(put-down a)', '(pick-up c)', '(stack c a)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-296.pddl
+['(unstack a c)', '(unstack c d)', '(put-down c)', '(pick-up d)', '(stack d c)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-297.pddl
+['(unstack d a)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-3.pddl
+['(unstack b c)', '(unstack c d)', '(put-down c)', '(unstack d a)', '(put-down d)', '(pick-up a)', '(stack a c)', '(pick-up d)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-304.pddl
+['(unstack b c)', '(put-down b)', '(unstack c a)', '(put-down c)', '(pick-up b)', '(stack b c)', '(unstack a d)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-305.pddl
+['(unstack d c)', '(put-down d)', '(unstack c b)', '(pick-up b)', '(stack b a)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-306.pddl
+['(unstack b c)', '(pick-up a)', '(stack a c)', '(pick-up d)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-307.pddl
+['(unstack a c)', '(unstack c d)', '(put-down c)', '(unstack d b)', '(put-down d)', '(pick-up c)', '(stack c b)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-313.pddl
+['(pick-up a)', '(stack a b)', '(unstack d c)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-315.pddl
+['(unstack a c)', '(unstack d b)', '(stack d c)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-327.pddl
+['(unstack c b)', '(unstack b a)', '(put-down b)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-340.pddl
+['(unstack d c)', '(put-down d)', '(unstack c b)', '(stack c d)', '(unstack b a)', '(pick-up a)', '(stack a c)']
+Failed to validate the plan for problem blocks_instances/instance-343.pddl
+['(unstack b a)', '(unstack a d)', '(put-down a)', '(unstack d c)', '(put-down d)', '(pick-up c)', '(stack c a)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-346.pddl
+['(unstack a c)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-35.pddl
+['(unstack c a)', '(put-down c)', '(unstack a d)', '(unstack d b)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-350.pddl
+['(unstack b d)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-355.pddl
+['(unstack c a)', '(put-down c)', '(unstack a d)', '(pick-up b)', '(stack b d)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-357.pddl
+['(unstack b c)', '(put-down b)', '(unstack d a)', '(pick-up a)', '(stack a b)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-358.pddl
+['(unstack a d)', '(put-down a)', '(unstack d c)', '(unstack c b)', '(put-down c)', '(pick-up a)', '(stack a c)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-359.pddl
+['(unstack c b)', '(put-down c)', '(unstack b d)', '(pick-up c)', '(stack c d)', '(pick-up a)', '(stack a c)']
+Failed to validate the plan for problem blocks_instances/instance-36.pddl
+['(unstack b d)', '(stack b a)', '(unstack d c)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-364.pddl
+['(unstack a b)', '(put-down a)', '(unstack b d)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-365.pddl
+['(unstack d c)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-366.pddl
+['(unstack a c)', '(pick-up b)', '(stack b c)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-367.pddl
+['(unstack c a)', '(put-down c)', '(unstack a d)', '(put-down a)', '(unstack d b)', '(pick-up b)', '(stack b c)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-369.pddl
+['(unstack a d)', '(put-down a)', '(unstack d b)', '(unstack b c)', '(stack b a)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-370.pddl
+['(unstack c d)', '(put-down c)', '(unstack d a)', '(put-down d)', '(unstack a b)', '(pick-up d)', '(stack d b)', '(pick-up c)', '(stack c d)']
+Failed to validate the plan for problem blocks_instances/instance-371.pddl
+['(unstack a b)', '(put-down a)', '(unstack b d)', '(put-down b)', '(pick-up a)', '(stack a b)', '(unstack d c)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-373.pddl
+['(unstack b a)', '(put-down b)', '(unstack a c)', '(put-down a)', '(unstack c d)', '(pick-up b)', '(stack b d)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-374.pddl
+['(unstack b c)', '(unstack d a)', '(put-down d)', '(pick-up c)', '(stack c a)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-38.pddl
+['(unstack a d)', '(put-down a)', '(unstack d b)', '(unstack b c)', '(put-down b)', '(pick-up a)', '(stack a b)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-380.pddl
+['(unstack c d)', '(put-down c)', '(unstack d b)', '(unstack b a)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-382.pddl
+['(unstack c a)', '(put-down c)', '(unstack a d)', '(pick-up c)', '(stack c d)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-386.pddl
+['(unstack c d)', '(put-down c)', '(unstack d b)', '(unstack b a)', '(put-down b)', '(pick-up a)', '(stack a c)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-387.pddl
+['(unstack b c)', '(put-down b)', '(unstack c a)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-388.pddl
+['(unstack b d)', '(unstack d a)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-393.pddl
+['(unstack a b)', '(unstack b d)', '(put-down b)', '(unstack d c)', '(put-down d)', '(pick-up c)', '(stack c b)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-394.pddl
+['(unstack c b)', '(pick-up b)', '(stack b a)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-397.pddl
+['(unstack c b)', '(unstack b a)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-4.pddl
+['(unstack d a)', '(put-down d)', '(unstack a c)', '(put-down a)', '(unstack c b)', '(pick-up d)', '(stack d b)', '(pick-up a)', '(stack a d)']
+Failed to validate the plan for problem blocks_instances/instance-402.pddl
+['(unstack c d)', '(unstack d b)', '(put-down d)', '(unstack b a)', '(put-down b)', '(pick-up a)', '(stack a d)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-405.pddl
+['(unstack c d)', '(put-down c)', '(unstack d a)', '(pick-up b)', '(stack b a)', '(pick-up c)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-412.pddl
+['(unstack a b)', '(put-down a)', '(unstack b d)', '(put-down b)', '(unstack d c)', '(pick-up a)', '(stack a c)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-417.pddl
+['(unstack b c)', '(unstack c a)', '(put-down c)', '(unstack a d)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-418.pddl
+['(unstack b c)', '(put-down b)', '(unstack c d)', '(unstack d a)', '(put-down d)', '(pick-up b)', '(stack b a)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-422.pddl
+['(unstack c b)', '(pick-up a)', '(stack a b)', '(pick-up d)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-425.pddl
+['(unstack a c)', '(unstack c d)', '(stack c b)']
+Failed to validate the plan for problem blocks_instances/instance-43.pddl
+['(unstack d a)', '(unstack a b)', '(put-down a)', '(pick-up c)', '(stack c b)', '(pick-up a)', '(stack a c)']
+Failed to validate the plan for problem blocks_instances/instance-435.pddl
+['(unstack a b)', '(put-down a)', '(unstack b c)', '(unstack c d)', '(put-down c)', '(pick-up a)', '(stack a d)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-436.pddl
+['(unstack c a)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-44.pddl
+['(unstack a c)', '(put-down a)', '(unstack c b)', '(unstack b d)', '(put-down b)', '(pick-up a)', '(stack a d)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-444.pddl
+['(unstack c d)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-445.pddl
+['(unstack d b)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-446.pddl
+['(unstack a e)', '(unstack e c)', '(put-down e)', '(unstack c b)', '(put-down c)', '(unstack b d)', '(pick-up d)', '(stack d e)', '(pick-up c)', '(stack c d)']
+Failed to validate the plan for problem blocks_instances/instance-452.pddl
+['(unstack d a)', '(unstack a e)', '(put-down a)', '(unstack e c)', '(put-down e)', '(unstack c b)', '(put-down c)', '(pick-up b)', '(stack b c)', '(pick-up e)', '(stack e b)', '(pick-up a)', '(stack a e)']
+Failed to validate the plan for problem blocks_instances/instance-453.pddl
+['(unstack e a)', '(put-down e)', '(unstack a d)', '(unstack d b)', '(put-down d)', '(unstack b c)', '(stack b e)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-454.pddl
+['(unstack b c)', '(put-down b)', '(unstack c d)', '(unstack d e)', '(put-down d)', '(unstack e a)', '(stack e d)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-455.pddl
+['(unstack c e)', '(unstack e b)', '(put-down e)', '(unstack b a)', '(put-down b)', '(pick-up e)', '(stack e b)', '(unstack a d)', '(put-down a)', '(pick-up d)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-459.pddl
+['(unstack e b)', '(unstack b a)', '(put-down b)', '(unstack a c)', '(put-down a)', '(unstack c d)', '(pick-up b)', '(stack b d)', '(pick-up a)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-462.pddl
+['(unstack e d)', '(put-down e)', '(unstack d a)', '(unstack a b)', '(stack a e)']
+Failed to validate the plan for problem blocks_instances/instance-467.pddl
+['(unstack d e)', '(put-down d)', '(unstack e b)', '(stack e a)', '(unstack b c)', '(pick-up c)', '(stack c d)']
+Failed to validate the plan for problem blocks_instances/instance-469.pddl
+['(unstack e c)', '(unstack c a)', '(put-down c)', '(unstack a d)', '(stack a c)', '(pick-up d)', '(stack d a)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-478.pddl
+['(unstack c d)', '(unstack d e)', '(put-down d)', '(unstack e a)', '(put-down e)', '(unstack a b)', '(stack a d)', '(pick-up e)', '(stack e a)', '(pick-up b)', '(stack b e)']
+Failed to validate the plan for problem blocks_instances/instance-48.pddl
+['(unstack c b)', '(unstack b a)', '(put-down b)', '(unstack a d)', '(stack a b)']
+Failed to validate the plan for problem blocks_instances/instance-482.pddl
+['(unstack a d)', '(unstack e c)', '(put-down e)', '(pick-up d)', '(stack d e)', '(unstack c b)', '(pick-up b)', '(stack b d)']
+Failed to validate the plan for problem blocks_instances/instance-483.pddl
+['(unstack b a)', '(unstack a c)', '(pick-up d)', '(stack d c)']
+Failed to validate the plan for problem blocks_instances/instance-490.pddl
+['(unstack e c)', '(pick-up d)', '(stack d c)', '(pick-up a)', '(stack a d)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-499.pddl
+['(unstack d a)', '(put-down d)', '(unstack a e)', '(pick-up d)', '(stack d e)']
+Failed to validate the plan for problem blocks_instances/instance-52.pddl
+['(unstack c a)', '(put-down c)', '(unstack d b)', '(pick-up a)', '(stack a b)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-58.pddl
+['(unstack a b)', '(put-down a)', '(unstack b d)', '(unstack d c)', '(stack d a)']
+Failed to validate the plan for problem blocks_instances/instance-60.pddl
+['(unstack d c)', '(unstack c a)', '(put-down c)', '(pick-up a)', '(stack a c)', '(pick-up b)', '(stack b a)']
+Failed to validate the plan for problem blocks_instances/instance-63.pddl
+['(unstack a c)', '(pick-up c)', '(stack c d)', '(pick-up b)', '(stack b c)']
+Failed to validate the plan for problem blocks_instances/instance-7.pddl
+['(unstack a d)', '(put-down a)', '(unstack d b)', '(unstack b c)', '(pick-up a)', '(stack a c)']
+Failed to validate the plan for problem blocks_instances/instance-72.pddl
+['(unstack a d)', '(pick-up d)', '(stack d b)']
+Failed to validate the plan for problem blocks_instances/instance-85.pddl
+['(unstack b a)', '(unstack a c)', '(put-down a)', '(pick-up c)', '(stack c d)', '(pick-up a)', '(stack a c)']
+Failed to validate the plan for problem blocks_instances/instance-86.pddl
+['(unstack b a)', '(unstack a c)', '(put-down a)', '(pick-up c)', '(stack c a)']
+Failed to validate the plan for problem blocks_instances/instance-96.pddl
+['(unstack a d)', '(put-down a)', '(pick-up d)', '(stack d a)', '(unstack c b)', '(pick-up b)', '(stack b d)']
+Evaluating the final outcome
+Success: 369, failure: 133, total expansions 115562, total generated 340472

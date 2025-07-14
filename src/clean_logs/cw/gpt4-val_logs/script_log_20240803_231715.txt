@@ -1,0 +1,467 @@
+
+AutoToS prompt:
+
+The task is a 5x5 mini crosswords. A state is a 2D array representing the current puzzle state, where the initial grid is all "None". Note that some of the possible answers are not exactly 5 character long. Given an input of possible answers to horizontal clues and vertical clues, how is the successor state function defined? Please first think step by step. Then provide the successor state function in Python code. 
+
+The possible clues for each row and each column are given separately. Here is an example of possible horizontal and vertical clues:
+
+horizontal_answers = [
+        ["tasks", "goals", "plans", "agend", "chores", "works", "deeds", "items", "lists", "brief"],
+        ["motor", "power", "drive", "diesel", "steam", "pumps", "crank", "gears", "turbn", "motor"],
+        ["grand", "artsy", "showy", "ornate", "fancy", "vain", "proud", "vogue", "swank", "luxus"], 
+        ["venue", "salle", "forum", "atria", "lobby", "parls", "court", "malls", "mall", "lobby"], 
+        ["jeer", "scoff", "sleer", "deris", "sneer", "scorn", "derid", "gibes", "gibed", "flout"] 
+]
+vertical_answers = [
+        ["amass", "stack", "hoard", "pile", "store", "heaps", "massy", "gathe", "lumps", "mound"],
+        ["nilga", "goral", "eland", "lepus", "gazal", "kudu", "oryx", "gnu", "imps", "carb"],
+        ["scheme", "design", "ettle", "nettle", "sting", "wiles", "plans", "ideas", "plots", "cocks"], 
+        ["spout", "nosle", "snout", "mouth", "nostr", "ports", "inlet", "vents", "outlt", "beaks"], 
+        ["drier", "arid", "sere", "parch", "dryer", "wring", "drear", "sear", "pall", "lack"]
+]
+
+where horizontal_answers is a list where element i is a list of possible answers to clue in row i, and vertical_answers is a list where element i is a list of possible answers to clue in column i.
+
+Model response:
+To generate a successor state function for the 5x5 mini crosswords puzzle, let's think through the steps systematically:
+
+1. **Initialize**:
+   - Start with an empty 5x5 grid where each cell is initially set to `None`.
+
+2. **Generate Successors**:
+   - Iterate through each possible answer for the horizontal clues and place them in the corresponding row.
+   - For each placement, iterate through each possible answer for the vertical clues and place them in the corresponding columns.
+   - Ensure that any placed horizontal and vertical answers don't conflict in overlapping cells.
+
+3. **Combination and Validation**:
+   - Create a new grid state for each valid combination of horizontal and vertical answers.
+
+4. **Returning the States**:
+   - Return all valid successor states as a list.
+
+Here is the Python function `generate_successor_states` to achieve this:
+
+```python
+def generate_successor_states(horizontal_answers, vertical_answers):
+    from copy import deepcopy
+
+    def is_valid(grid, row, col, word, is_horizontal):
+        if is_horizontal:
+            for j in range(len(word)):
+                if grid[row][col + j] is not None and grid[row][col + j] != word[j]:
+                    return False
+        else:
+            for i in range(len(word)):
+                if grid[row + i][col] is not None and grid[row + i][col] != word[i]:
+                    return False
+        return True
+    
+    def place_word(grid, row, col, word, is_horizontal):
+        new_grid = deepcopy(grid)
+        if is_horizontal:
+            for j in range(len(word)):
+                new_grid[row][col + j] = word[j]
+        else:
+            for i in range(len(word)):
+                new_grid[row + i][col] = word[i]
+        return new_grid
+    
+    def generate_all_successors(horizontal_answers, vertical_answers):
+        initial_grid = [[None for _ in range(5)] for _ in range(5)]
+        successors = []
+
+        for h1 in horizontal_answers[0]:
+            if len(h1) > 5:
+                continue
+            grid1 = place_word(initial_grid, 0, 0, h1, True)
+
+            for h2 in horizontal_answers[1]:
+                if len(h2) > 5 or not is_valid(grid1, 1, 0, h2, True):
+                    continue
+                grid2 = place_word(grid1, 1, 0, h2, True)
+
+                for h3 in horizontal_answers[2]:
+                    if len(h3) > 5 or not is_valid(grid2, 2, 0, h3, True):
+                        continue
+                    grid3 = place_word(grid2, 2, 0, h3, True)
+
+                    for h4 in horizontal_answers[3]:
+                        if len(h4) > 5 or not is_valid(grid3, 3, 0, h4, True):
+                            continue
+                        grid4 = place_word(grid3, 3, 0, h4, True)
+
+                        for h5 in horizontal_answers[4]:
+                            if len(h5) > 5 or not is_valid(grid4, 4, 0, h5, True):
+                                continue
+                            grid5 = place_word(grid4, 4, 0, h5, True)
+
+                            for v1 in vertical_answers[0]:
+                                if len(v1) > 5 or not is_valid(grid5, 0, 0, v1, False):
+                                    continue
+                                grid_v1 = place_word(grid5, 0, 0, v1, False)
+
+                                for v2 in vertical_answers[1]:
+                                    if len(v2) > 5 or not is_valid(grid_v1, 0, 1, v2, False):
+                                        continue
+                                    grid_v2 = place_word(grid_v1, 0, 1, v2, False)
+
+                                    for v3 in vertical_answers[2]:
+                                        if len(v3) > 5 or not is_valid(grid_v2, 0, 2, v3, False):
+                                            continue
+                                        grid_v3 = place_word(grid_v2, 0, 2, v3, False)
+
+                                        for v4 in vertical_answers[3]:
+                                            if len(v4) > 5 or not is_valid(grid_v3, 0, 3, v4, False):
+                                                continue
+                                            grid_v4 = place_word(grid_v3, 0, 3, v4, False)
+
+                                            for v5 in vertical_answers[4]:
+                                                if len(v5) > 5 or not is_valid(grid_v4, 0, 4, v5, False):
+                                                    continue
+                                                final_grid = place_word(grid_v4, 0, 4, v5, False)
+                                                successors.append(final_grid)
+        return successors
+    
+    return generate_all_successors(horizontal_answers, vertical_answers)
+```
+
+In this function:
+- `is_valid()` checks if placing a word will not conflict with existing placements.
+- `place_word()` places a word in the grid either horizontally or vertically.
+- `generate_all_successors()` iteratively places all possible combinations of horizontal and vertical answers while validating the overlapping cells, then returns the valid successors.
+
+AutoToS prompt:
+
+Please provide a goal test function in Python ensuring that all cells are not None, all words horizontally are matching at least one of the horizontal answers, and all words vertically match at least one of the vertical answers. The function should receive a state, horizontal_answers, and vertical_answers as before and return True for a goal state and False otherwise.
+
+Model response:
+To create the `goal_test` function, we need to check three conditions:
+
+1. **All cells are not None**: Ensure that every cell in the state grid is filled.
+2. **Horizontal words match**: Check that each word formed by the horizontal rows matches at least one of the horizontal answers for the respective row.
+3. **Vertical words match**: Check that each word formed by the vertical columns matches at least one of the vertical answers for the respective column.
+
+Here's the `goal_test` function in Python:
+
+```python
+def goal_test(state, horizontal_answers, vertical_answers):
+    def check_all_filled(grid):
+        for row in grid:
+            for cell in row:
+                if cell is None:
+                    return False
+        return True
+
+    def check_horizontal_words(grid, horizontal_answers):
+        for i, answers in enumerate(horizontal_answers):
+            word = ''.join(grid[i])
+            if word not in answers:
+                return False
+        return True
+
+    def check_vertical_words(grid, vertical_answers):
+        for col in range(5):
+            word = ''.join([grid[row][col] for row in range(5)])
+            if word not in vertical_answers[col]:
+                return False
+        return True
+
+    if not check_all_filled(state):
+        return False
+    
+    if not check_horizontal_words(state, horizontal_answers):
+        return False
+    
+    if not check_vertical_words(state, vertical_answers):
+        return False
+
+    return True
+```
+
+In this function:
+- `check_all_filled(grid)` iterates through the grid and ensures no cell is `None`.
+- `check_horizontal_words(grid, horizontal_answers)` checks if each horizontal word in the grid matches one of the possible horizontal answers for that row.
+- `check_vertical_words(grid, vertical_answers)` checks if each vertical word in the grid matches one of the possible vertical answers for that column.
+
+This `goal_test` function takes the current state of the grid, the possible horizontal answers, and the possible vertical answers, and returns `True` if the state is a goal state; otherwise, it returns `False`.
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+Successor Iteration 1
+
+AutoToS prompt:
+The following exception was produced when testing the successor function: 
+  File "autoToS/src/crossword5by5/crossword_experiments.py", line 99, in successor_states_f
+    return successor_states(state, horizontal_answers, vertical_answers)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+generate_successor_states() takes 2 positional arguments but 3 were given. Please fix this exception in the successor function.
+Model response:
+The exception is due to the function signature `generate_successor_states` not matching the invocation in your code. It seems like your testing environment expects the function to take an initial `state` along with `horizontal_answers`, and `vertical_answers`.
+
+Here’s how you can modify the function to accommodate the `state` argument:
+
+1. Change `generate_successor_states` to take three arguments: `state`, `horizontal_answers`, and `vertical_answers`.
+
+2. Use the initial `state` provided instead of initializing it within the function.
+
+Here’s the updated solution:
+
+```python
+def generate_successor_states(state, horizontal_answers, vertical_answers):
+    from copy import deepcopy
+
+    def is_valid(grid, row, col, word, is_horizontal):
+        if is_horizontal:
+            for j in range(len(word)):
+                if grid[row][col + j] is not None and grid[row][col + j] != word[j]:
+                    return False
+        else:
+            for i in range(len(word)):
+                if grid[row + i][col] is not None and grid[row + i][col] != word[i]:
+                    return False
+        return True
+    
+    def place_word(grid, row, col, word, is_horizontal):
+        new_grid = deepcopy(grid)
+        if is_horizontal:
+            for j in range(len(word)):
+                new_grid[row][col + j] = word[j]
+        else:
+            for i in range(len(word)):
+                new_grid[row + i][col] = word[i]
+        return new_grid
+    
+    def generate_all_successors(state, horizontal_answers, vertical_answers):
+        initial_grid = deepcopy(state)
+        successors = []
+
+        for h1 in horizontal_answers[0]:
+            if len(h1) > 5:
+                continue
+            grid1 = place_word(initial_grid, 0, 0, h1, True)
+
+            for h2 in horizontal_answers[1]:
+                if len(h2) > 5 or not is_valid(grid1, 1, 0, h2, True):
+                    continue
+                grid2 = place_word(grid1, 1, 0, h2, True)
+
+                for h3 in horizontal_answers[2]:
+                    if len(h3) > 5 or not is_valid(grid2, 2, 0, h3, True):
+                        continue
+                    grid3 = place_word(grid2, 2, 0, h3, True)
+
+                    for h4 in horizontal_answers[3]:
+                        if len(h4) > 5 or not is_valid(grid3, 3, 0, h4, True):
+                            continue
+                        grid4 = place_word(grid3, 3, 0, h4, True)
+
+                        for h5 in horizontal_answers[4]:
+                            if len(h5) > 5 or not is_valid(grid4, 4, 0, h5, True):
+                                continue
+                            grid5 = place_word(grid4, 4, 0, h5, True)
+
+                            for v1 in vertical_answers[0]:
+                                if len(v1) > 5 or not is_valid(grid5, 0, 0, v1, False):
+                                    continue
+                                grid_v1 = place_word(grid5, 0, 0, v1, False)
+
+                                for v2 in vertical_answers[1]:
+                                    if len(v2) > 5 or not is_valid(grid_v1, 0, 1, v2, False):
+                                        continue
+                                    grid_v2 = place_word(grid_v1, 0, 1, v2, False)
+
+                                    for v3 in vertical_answers[2]:
+                                        if len(v3) > 5 or not is_valid(grid_v2, 0, 2, v3, False):
+                                            continue
+                                        grid_v3 = place_word(grid_v2, 0, 2, v3, False)
+
+                                        for v4 in vertical_answers[3]:
+                                            if len(v4) > 5 or not is_valid(grid_v3, 0, 3, v4, False):
+                                                continue
+                                            grid_v4 = place_word(grid_v3, 0, 3, v4, False)
+
+                                            for v5 in vertical_answers[4]:
+                                                if len(v5) > 5 or not is_valid(grid_v4, 0, 4, v5, False):
+                                                    continue
+                                                final_grid = place_word(grid_v4, 0, 4, v5, False)
+                                                successors.append(final_grid)
+        return successors
+    
+    return generate_all_successors(state, horizontal_answers, vertical_answers)
+```
+
+Now the `generate_successor_states` function will correctly accept an initial `state` as an input argument along with the `horizontal_answers`, and `vertical_answers` and generate the successor states accordingly.
+Successor Iteration 2
+
+AutoToS prompt:
+Successor state has more than 5 filled cells more than the parent state.
+Let's think step by step. First, think what you did wrong.
+Then, think of in what ways successor state should be different from the parent state.
+Then, provide the complete Python code for the revised successor function that returns a list of successor states.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Input state: [[None, None, None, None, None], [None, None, None, None, None], [None, None, None, None, None], [None, None, None, None, None], [None, None, None, None, None]]
+Example wrong successor state: [['a', 'g', 'e', 'n', 'd'], ['m', 'o', 't', 'o', 'r'], ['a', 'r', 't', 's', 'y'], ['s', 'a', 'l', 'l', 'e'], ['s', 'l', 'e', 'e', 'r']]
+Horizontal clues: [['tasks', 'goals', 'plans', 'agend', 'chores', 'works', 'deeds', 'items', 'lists', 'brief'], ['motor', 'power', 'drive', 'diesel', 'steam', 'pumps', 'crank', 'gears', 'turbn', 'motor'], ['grand', 'artsy', 'showy', 'ornate', 'fancy', 'vain', 'proud', 'vogue', 'swank', 'luxus'], ['venue', 'salle', 'forum', 'atria', 'lobby', 'parls', 'court', 'malls', 'mall', 'lobby'], ['jeer', 'scoff', 'sleer', 'deris', 'sneer', 'scorn', 'derid', 'gibes', 'gibed', 'flout']]
+Vertical clues: [['amass', 'stack', 'hoard', 'pile', 'store', 'heaps', 'massy', 'gathe', 'lumps', 'mound'], ['nilga', 'goral', 'eland', 'lepus', 'gazal', 'kudu', 'oryx', 'gnu', 'imps', 'carb'], ['scheme', 'design', 'ettle', 'nettle', 'sting', 'wiles', 'plans', 'ideas', 'plots', 'cocks'], ['spout', 'nosle', 'snout', 'mouth', 'nostr', 'ports', 'inlet', 'vents', 'outlt', 'beaks'], ['drier', 'arid', 'sere', 'parch', 'dryer', 'wring', 'drear', 'sear', 'pall', 'lack']]
+
+Model response:
+The problem with the previous implementation is that it's attempting to fill the entire grid in one go, disregarding how a valid successor state should only differ from its parent state by the addition of one complete horizontal or vertical word.
+
+A valid successor state should be created by adding just one word (either horizontal or vertical) to the current state while ensuring no conflicts in the current grid cells.
+
+Here's the revised approach:
+
+1. **Initialize**: Use the given `state` as the initial grid.
+2. **Generate Successors by Adding One Word**:
+   - Iterate through each row and attempt to add each possible horizontal word.
+   - Iterate through each column and attempt to add each possible vertical word.
+3. **Check Validity**: Ensure the newly placed word does not conflict with the current grid.
+
+Here's the revised code that adheres to these principles:
+
+```python
+def generate_successor_states(state, horizontal_answers, vertical_answers):
+    from copy import deepcopy
+
+    def is_valid_placement(grid, row, col, word, is_horizontal):
+        if is_horizontal:
+            if col + len(word) > len(grid[0]):  # Out of bounds check
+                return False
+            for j in range(len(word)):
+                if grid[row][col + j] is not None and grid[row][col + j] != word[j]:
+                    return False
+        else:
+            if row + len(word) > len(grid):  # Out of bounds check
+                return False
+            for i in range(len(word)):
+                if grid[row + i][col] is not None and grid[row + i][col] != word[i]:
+                    return False
+        return True
+
+    def place_word(grid, row, col, word, is_horizontal):
+        new_grid = deepcopy(grid)
+        if is_horizontal:
+            for j in range(len(word)):
+                new_grid[row][col + j] = word[j]
+        else:
+            for i in range(len(word)):
+                new_grid[row + i][col] = word[i]
+        return new_grid
+    
+    successors = []
+
+    # Generate successors by adding one horizontal word
+    for i in range(5):
+        if any(state[i][j] is None for j in range(5)):  # Only consider rows with empty cells
+            for word in horizontal_answers[i]:
+                if is_valid_placement(state, i, 0, word, True):
+                    new_state = place_word(state, i, 0, word, True)
+                    successors.append(new_state)
+
+    # Generate successors by adding one vertical word
+    for j in range(5):
+        if any(state[i][j] is None for i in range(5)):  # Only consider columns with empty cells
+            for word in vertical_answers[j]:
+                if is_valid_placement(state, 0, j, word, False):
+                    new_state = place_word(state, 0, j, word, False)
+                    successors.append(new_state)
+
+    return successors
+```
+
+In this function:
+- `is_valid_placement(grid, row, col, word, is_horizontal)` checks if placing the word at the specified starting position will be valid (no conflicts and within bounds).
+- `place_word(grid, row, col, word, is_horizontal)` places a word on the grid and returns the new grid.
+- The `generate_successor_states` function creates successors by adding either one horizontal or one vertical word to the current state, ensuring only one word is added in each successor state.
+
+This approach ensures that each successor state only differs from the parent state by the addition of a single complete word, either horizontally or vertically, while maintaining the overall crossword puzzle constraints.
+Successor Iteration 3
+
+AutoToS prompt:
+Successor state has the same number of filled cells as the parent state.
+Let's think step by step. First, think what you did wrong.
+Then, think of in what ways successor state should be different from the parent state.
+Then, provide the complete Python code for the revised successor function that returns a list of successor states.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Input state: [[None, None, None, None, 'l'], [None, None, None, None, 'a'], [None, None, None, None, 'c'], [None, None, None, None, 'k'], [None, None, None, None, None]]
+Example wrong successor state: [[None, None, None, None, 'l'], [None, None, None, None, 'a'], [None, None, None, None, 'c'], [None, None, None, None, 'k'], [None, None, None, None, None]]
+Horizontal clues: [['tasks', 'goals', 'plans', 'agend', 'chores', 'works', 'deeds', 'items', 'lists', 'brief'], ['motor', 'power', 'drive', 'diesel', 'steam', 'pumps', 'crank', 'gears', 'turbn', 'motor'], ['grand', 'artsy', 'showy', 'ornate', 'fancy', 'vain', 'proud', 'vogue', 'swank', 'luxus'], ['venue', 'salle', 'forum', 'atria', 'lobby', 'parls', 'court', 'malls', 'mall', 'lobby'], ['jeer', 'scoff', 'sleer', 'deris', 'sneer', 'scorn', 'derid', 'gibes', 'gibed', 'flout']]
+Vertical clues: [['amass', 'stack', 'hoard', 'pile', 'store', 'heaps', 'massy', 'gathe', 'lumps', 'mound'], ['nilga', 'goral', 'eland', 'lepus', 'gazal', 'kudu', 'oryx', 'gnu', 'imps', 'carb'], ['scheme', 'design', 'ettle', 'nettle', 'sting', 'wiles', 'plans', 'ideas', 'plots', 'cocks'], ['spout', 'nosle', 'snout', 'mouth', 'nostr', 'ports', 'inlet', 'vents', 'outlt', 'beaks'], ['drier', 'arid', 'sere', 'parch', 'dryer', 'wring', 'drear', 'sear', 'pall', 'lack']]
+
+Model response:
+Given the mistake mentioned, the problem is in handling cases where we need to ensure the successor state differs from the parent state by properly adding at least one word while validating the placement.
+
+To ensure each generated successor state differs from the parent state by precisely one word insertion, we need to:
+1. Iterate over each cell in the grid.
+2. For each empty cell, attempt to place each valid horizontal and vertical word.
+3. Validate the placement to ensure no conflicts arise with already placed characters and within bounds constraints.
+
+Here is the revised `generate_successor_states` function to address these issues:
+
+```python
+def generate_successor_states(state, horizontal_answers, vertical_answers):
+    from copy import deepcopy
+
+    def is_valid_placement(grid, row, col, word, is_horizontal):
+        if is_horizontal:
+            if col + len(word) > len(grid[0]):
+                return False
+            for j in range(len(word)):
+                if grid[row][col + j] is not None and grid[row][col + j] != word[j]:
+                    return False
+        else:
+            if row + len(word) > len(grid):
+                return False
+            for i in range(len(word)):
+                if grid[row + i][col] is not None and grid[row + i][col] != word[i]:
+                    return False
+        return True
+
+    def place_word(grid, row, col, word, is_horizontal):
+        new_grid = deepcopy(grid)
+        if is_horizontal:
+            for j in range(len(word)):
+                new_grid[row][col + j] = word[j]
+        else:
+            for i in range(len(word)):
+                new_grid[row + i][col] = word[i]
+        return new_grid
+    
+    successors = []
+
+    # Generate successors by adding one valid word in each possible empty position
+    for i in range(5):
+        for j in range(5):
+            if state[i][j] is None:
+                # Try to add a horizontal word starting at (i, j)
+                for word in horizontal_answers[i]:
+                    if is_valid_placement(state, i, j, word, True):
+                        new_state = place_word(state, i, j, word, True)
+                        successors.append(new_state)
+                
+                # Try to add a vertical word starting at (i, j)
+                for word in vertical_answers[j]:
+                    if is_valid_placement(state, i, j, word, False):
+                        new_state = place_word(state, i, j, word, False)
+                        successors.append(new_state)
+    
+    return successors
+```
+
+Key modifications:
+- **Iteration through each cell**: Iterate over every cell and attempt to place words from the provided lists of horizontal and vertical answers.
+- **Validate placements**: Ensure the placement is valid (no conflicts and within bounds).
+- **Add distinct words one at a time**: Place a word starting from each empty cell, both horizontal and vertical, creating a new successor state for each valid word insertion.
+
+This implementation ensures that each successor state differs from the parent state by exactly one additional word, satisfying the constraint of adding more filled cells in each new state compared to the initial state.
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Evaluating the final outcome
+Success: 20, failure: 0, total expansions 4514757, total generated 16830232

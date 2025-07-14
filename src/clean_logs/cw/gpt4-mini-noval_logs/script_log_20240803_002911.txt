@@ -1,0 +1,111 @@
+
+AutoToS prompt:
+
+The task is a 5x5 mini crosswords. A state is a 2D array representing the current puzzle state, where the initial grid is all "None". Note that some of the possible answers are not exactly 5 character long. Given an input of possible answers to horizontal clues and vertical clues, how is the successor state function defined? Please first think step by step. Then provide the successor state function in Python code. 
+
+The possible clues for each row and each column are given separately. Here is an example of possible horizontal and vertical clues:
+
+horizontal_answers = [
+        ["tasks", "goals", "plans", "agend", "chores", "works", "deeds", "items", "lists", "brief"],
+        ["motor", "power", "drive", "diesel", "steam", "pumps", "crank", "gears", "turbn", "motor"],
+        ["grand", "artsy", "showy", "ornate", "fancy", "vain", "proud", "vogue", "swank", "luxus"], 
+        ["venue", "salle", "forum", "atria", "lobby", "parls", "court", "malls", "mall", "lobby"], 
+        ["jeer", "scoff", "sleer", "deris", "sneer", "scorn", "derid", "gibes", "gibed", "flout"] 
+]
+vertical_answers = [
+        ["amass", "stack", "hoard", "pile", "store", "heaps", "massy", "gathe", "lumps", "mound"],
+        ["nilga", "goral", "eland", "lepus", "gazal", "kudu", "oryx", "gnu", "imps", "carb"],
+        ["scheme", "design", "ettle", "nettle", "sting", "wiles", "plans", "ideas", "plots", "cocks"], 
+        ["spout", "nosle", "snout", "mouth", "nostr", "ports", "inlet", "vents", "outlt", "beaks"], 
+        ["drier", "arid", "sere", "parch", "dryer", "wring", "drear", "sear", "pall", "lack"]
+]
+
+where horizontal_answers is a list where element i is a list of possible answers to clue in row i, and vertical_answers is a list where element i is a list of possible answers to clue in column i.
+
+Model response:
+```python
+def successor_state(state, horizontal_answers, vertical_answers):
+    def can_place_word(state, word, row, col, direction):
+        if direction == 'horizontal':
+            if col + len(word) > len(state):
+                return False
+            for i in range(len(word)):
+                if state[row][col + i] is not None and state[row][col + i] != word[i]:
+                    return False
+            return True
+        elif direction == 'vertical':
+            if row + len(word) > len(state):
+                return False
+            for i in range(len(word)):
+                if state[row + i][col] is not None and state[row + i][col] != word[i]:
+                    return False
+            return True
+        return False
+
+    def place_word(state, word, row, col, direction):
+        new_state = [list(row) for row in state]  # Create a copy of the state
+        if direction == 'horizontal':
+            for i in range(len(word)):
+                new_state[row][col + i] = word[i]
+        elif direction == 'vertical':
+            for i in range(len(word)):
+                new_state[row + i][col] = word[i]
+        return new_state
+
+    successors = []
+    
+    for row in range(len(state)):
+        for word in horizontal_answers[row]:
+            if can_place_word(state, word, row, 0, 'horizontal'):
+                new_state = place_word(state, word, row, 0, 'horizontal')
+                successors.append(new_state)
+
+    for col in range(len(state)):
+        for word in vertical_answers[col]:
+            if can_place_word(state, word, 0, col, 'vertical'):
+                new_state = place_word(state, word, 0, col, 'vertical')
+                successors.append(new_state)
+    
+    return successors
+```
+
+AutoToS prompt:
+
+Please provide a goal test function in Python ensuring that all cells are not None, all words horizontally are matching at least one of the horizontal answers, and all words vertically match at least one of the vertical answers. The function should receive a state, horizontal_answers, and vertical_answers as before and return True for a goal state and False otherwise.
+
+Model response:
+```python
+def goal_test(state, horizontal_answers, vertical_answers):
+    def check_horizontal(state, row, answers):
+        word = ''.join(state[row])
+        return word in answers
+
+    def check_vertical(state, col, answers):
+        word = ''.join(state[row][col] for row in range(len(state)))
+        return word in answers
+
+    for row in range(len(state)):
+        if any(cell is None for cell in state[row]):
+            return False
+        if not check_horizontal(state, row, horizontal_answers[row]):
+            return False
+
+    for col in range(len(state)):
+        if any(state[row][col] is None for row in range(len(state))):
+            return False
+        if not check_vertical(state, col, vertical_answers[col]):
+            return False
+
+    return True
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Evaluating the final outcome
+Success: 20, failure: 0, total expansions 1587973, total generated 13705798

@@ -1,0 +1,142 @@
+
+AutoToS prompt:
+
+I am playing with a set of blocks where I need to arrange the blocks into stacks. Here are the actions I can do
+   Pick up a block from the table
+   Put down a block on the table
+   Unstack a block from on top of another block
+   Stack a block on top of another block
+
+   I have the following restrictions on my actions:
+   I can only pick up or unstack one block at a time.
+   I can only pick up or unstack a block if my hand is empty.
+   I can only pick up a block if the block is on the table and the block is clear. A block is clear if the block has no other blocks on top of it and if the block is not picked up.
+   I can only unstack a block from on top of another block if the block I am unstacking was really on top of the other block.
+   I can only unstack a block from on top of another block if the block I am unstacking is clear.
+   Once I pick up a block, I am holding the block and it is no longer clear and no longer on the table. 
+   Once I unstack from on top of another block, I am holding the block and it is no longer clear. Instead, the other block becomes clear.   
+
+   I can only put down a block that I am holding.
+   I can only stack a block on top of another block if I am holding the block being stacked.
+   I can only stack a block on top of another block if the block onto which I am stacking the block is clear.
+   Once I put down a block, my hand becomes empty, the block becomes clear, and it is now on the table.
+   Once I stack a block on top of another block, the block on top becomes clear and the block under it is no longer clear.
+If a state is defined by a dictionary of following predicates "clear block", "on-table block", "arm-empty", "holding block", and "on block1 block2", how are successor states defined? 
+Here is an example of the initial state:
+Init: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+Please provide only the Python code for the successor function that returns a list of successor states.
+
+Model response:
+Here is the Python code for the successor function that returns a list of successor states based on the given actions and restrictions:
+
+python
+```
+def successor(state):
+    successors = []
+    clear_blocks = state['clear']
+    on_table_blocks = state['on-table']
+    arm_empty = state['arm-empty']
+    holding_block = state['holding']
+    on_blocks = state['on']
+
+    # Action: Pick up a block from the table
+    if arm_empty:
+        for block in clear_blocks:
+            if block in on_table_blocks:
+                new_state = state.copy()
+                new_state['clear'] = [b for b in clear_blocks if b != block]
+                new_state['on-table'] = [b for b in on_table_blocks if b != block]
+                new_state['arm-empty'] = False
+                new_state['holding'] = block
+                successors.append(new_state)
+
+    # Action: Unstack a block from on top of another block
+    if arm_empty:
+        for block1, block2 in on_blocks:
+            if block1 in clear_blocks:
+                new_state = state.copy()
+                new_state['clear'] = [b for b in clear_blocks if b != block1] + [block2]
+                new_state['on'] = [pair for pair in on_blocks if pair != (block1, block2)]
+                new_state['arm-empty'] = False
+                new_state['holding'] = block1
+                successors.append(new_state)
+
+    # Action: Put down a block on the table
+    if not arm_empty and holding_block is not None:
+        new_state = state.copy()
+        new_state['clear'] = clear_blocks + [holding_block]
+        new_state['on-table'] = on_table_blocks + [holding_block]
+        new_state['arm-empty'] = True
+        new_state['holding'] = None
+        successors.append(new_state)
+
+    # Action: Stack a block on top of another block
+    if not arm_empty and holding_block is not None:
+        for block in clear_blocks:
+            new_state = state.copy()
+            new_state['clear'] = [b for b in clear_blocks if b != block] + [holding_block]
+            new_state['on'] = on_blocks + [(holding_block, block)]
+            new_state['arm-empty'] = True
+            new_state['holding'] = None
+            successors.append(new_state)
+
+    return successors
+
+# Example usage:
+initial_state = {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+successor_states = successor(initial_state)
+for s in successor_states:
+    print(s)
+```
+
+This function takes the current state as input and returns a list of possible successor states based on the available actions and restrictions. Each action is implemented according to the rules provided, and the function ensures that only valid actions are performed
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state. The goal specifies a partial state, the facts that must be true in any full goal state. Assume that the goal configuration is provided in the same dictionary format. 
+Here's an example goal specification:
+Goal: {'clear': [], 'on-table': [], 'on': [('b', 'c'), ('d', 'b')]}
+
+Model response:
+Here is the Python code that tests whether a state is a goal state based on the provided goal specification:
+
+python
+```
+def is_goal_state(state, goal):
+    for key in goal:
+        if key == 'clear':
+            if not all(block in state['clear'] for block in goal['clear']):
+                return False
+        elif key == 'on-table':
+            if not all(block in state['on-table'] for block in goal['on-table']):
+                return False
+        elif key == 'on':
+            for block1, block2 in goal['on']:
+                if (block1, block2) not in state['on']:
+                    return False
+        elif key == 'arm-empty':
+            if state['arm-empty'] != goal['arm-empty']:
+                return False
+        elif key == 'holding':
+            if state['holding'] != goal['holding']:
+                return False
+    return True
+
+# Example usage:
+goal_state = {'clear': [], 'on-table': [], 'on': [('b', 'c'), ('d', 'b')]}
+current_state = {'clear': ['a', 'd'], 'on-table': ['a', 'c'], 'arm-empty': True, 'holding': None, 'on': [('b', 'c'), ('d', 'b')]}
+print(is_goal_state(current_state, goal_state))  # Output: True or False
+```
+
+This function compares the current state with the goal state and returns `True` if the current state satisfies all the conditions specified in the goal state, otherwise it returns `False`. The comparison is done for each key in the goal dictionary, ensuring that the current state matches the goal state for the specified predicates
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Evaluating the final outcome
+Success: 502, failure: 0, total expansions 50484, total generated 130127

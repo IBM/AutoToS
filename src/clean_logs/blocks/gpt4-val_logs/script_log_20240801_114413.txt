@@ -1,0 +1,151 @@
+
+AutoToS prompt:
+
+I am playing with a set of blocks where I need to arrange the blocks into stacks. Here are the actions I can do
+   Pick up a block from the table
+   Put down a block on the table
+   Unstack a block from on top of another block
+   Stack a block on top of another block
+
+   I have the following restrictions on my actions:
+   I can only pick up or unstack one block at a time.
+   I can only pick up or unstack a block if my hand is empty.
+   I can only pick up a block if the block is on the table and the block is clear. A block is clear if the block has no other blocks on top of it and if the block is not picked up.
+   I can only unstack a block from on top of another block if the block I am unstacking was really on top of the other block.
+   I can only unstack a block from on top of another block if the block I am unstacking is clear.
+   Once I pick up a block, I am holding the block and it is no longer clear and no longer on the table. 
+   Once I unstack from on top of another block, I am holding the block and it is no longer clear. Instead, the other block becomes clear.   
+
+   I can only put down a block that I am holding.
+   I can only stack a block on top of another block if I am holding the block being stacked.
+   I can only stack a block on top of another block if the block onto which I am stacking the block is clear.
+   Once I put down a block, my hand becomes empty, the block becomes clear, and it is now on the table.
+   Once I stack a block on top of another block, the block on top becomes clear and the block under it is no longer clear.
+If a state is defined by a dictionary of following predicates "clear block", "on-table block", "arm-empty", "holding block", and "on block1 block2", how are successor states defined? 
+Here is an example of the initial state:
+Init: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+Please provide only the Python code for the successor function that returns a list of successor states.
+
+Model response:
+```python
+def successor_states(state):
+    def pick_up(block):
+        if state['arm-empty'] and block in state['on-table'] and block in state['clear']:
+            new_state = {
+                'clear': state['clear'].copy(),
+                'on-table': state['on-table'].copy(),
+                'arm-empty': False,
+                'holding': block,
+                'on': state['on'].copy()
+            }
+            new_state['clear'].remove(block)
+            new_state['on-table'].remove(block)
+            return new_state
+        return None
+    
+    def put_down(block):
+        if state['holding'] == block:
+            new_state = {
+                'clear': state['clear'].copy(),
+                'on-table': state['on-table'].copy(),
+                'arm-empty': True,
+                'holding': None,
+                'on': state['on'].copy()
+            }
+            new_state['clear'].append(block)
+            new_state['on-table'].append(block)
+            return new_state
+        return None
+    
+    def unstack(block1, block2):
+        if state['arm-empty'] and (block1, block2) in state['on'] and block1 in state['clear']:
+            new_state = {
+                'clear': state['clear'].copy(),
+                'on-table': state['on-table'].copy(),
+                'arm-empty': False,
+                'holding': block1,
+                'on': [pair for pair in state['on'] if pair != (block1, block2)]
+            }
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            return new_state
+        return None
+        
+    def stack(block1, block2):
+        if state['holding'] == block1 and block2 in state['clear']:
+            new_state = {
+                'clear': state['clear'].copy(),
+                'on-table': state['on-table'].copy(),
+                'arm-empty': True,
+                'holding': None,
+                'on': state['on'].copy()
+            }
+            new_state['clear'].remove(block2)
+            new_state['clear'].append(block1)
+            new_state['on'].append((block1, block2))
+            return new_state
+        return None
+    
+    successors = []
+
+    # Pick up operations
+    for block in state['on-table']:
+        new_state = pick_up(block)
+        if new_state:
+            successors.append(new_state)
+    
+    # Put down operation
+    if state['holding']:
+        new_state = put_down(state['holding'])
+        if new_state:
+            successors.append(new_state)
+    
+    # Unstack operations
+    for b1, b2 in state['on']:
+        new_state = unstack(b1, b2)
+        if new_state:
+            successors.append(new_state)
+    
+    # Stack operations
+    if state['holding']:
+        for block in state['clear']:
+            new_state = stack(state['holding'], block)
+            if new_state:
+                successors.append(new_state)
+                
+    return successors
+```
+
+AutoToS prompt:
+
+    Provide only the python code that tests whether a state is a goal state. The goal specifies a partial state, the facts that must be true in any full goal state. Assume that the goal configuration is provided in the same dictionary format. 
+    Here's an example goal specification:
+    Goal: {'clear': [], 'on-table': [], 'on': [('b', 'c'), ('d', 'b')]}
+    
+Model response:
+```python
+def is_goal_state(state, goal):
+    def check_clear(state_clear, goal_clear):
+        return all(block in state_clear for block in goal_clear)
+
+    def check_on_table(state_on_table, goal_on_table):
+        return all(block in state_on_table for block in goal_on_table)
+
+    def check_on(state_on, goal_on):
+        return all(pair in state_on for pair in goal_on)
+    
+    return (check_clear(state['clear'], goal['clear']) and
+            check_on_table(state['on-table'], goal['on-table']) and
+            check_on(state['on'], goal['on']))
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Evaluating the final outcome
+Success: 502, failure: 0, total expansions 238459, total generated 787414

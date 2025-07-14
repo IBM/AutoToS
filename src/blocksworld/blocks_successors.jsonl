@@ -1,0 +1,1330 @@
+[
+    {
+        "state": {
+            "clear": [
+                "b"
+            ],
+            "on-table": [
+                "d"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "b",
+                    "a"
+                ],
+                [
+                    "c",
+                    "d"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "a"
+                ],
+                "on-table": [
+                    "d"
+                ],
+                "arm-empty": false,
+                "holding": "b",
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "d"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "a"
+            ],
+            "on-table": [
+                "d"
+            ],
+            "arm-empty": false,
+            "holding": "b",
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "c",
+                    "d"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "a",
+                    "b"
+                ],
+                "on-table": [
+                    "d",
+                    "b"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "d"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "b"
+                ],
+                "on-table": [
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "d"
+                    ],
+                    [
+                        "b",
+                        "a"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "a",
+                "b",
+                "d"
+            ],
+            "on-table": [
+                "a",
+                "c",
+                "d"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "b",
+                    "c"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "b",
+                    "d"
+                ],
+                "on-table": [
+                    "c",
+                    "d"
+                ],
+                "arm-empty": false,
+                "holding": "a",
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "a",
+                    "b"
+                ],
+                "on-table": [
+                    "a",
+                    "c"
+                ],
+                "arm-empty": false,
+                "holding": "d",
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "a",
+                    "d",
+                    "c"
+                ],
+                "on-table": [
+                    "a",
+                    "c",
+                    "d"
+                ],
+                "arm-empty": false,
+                "holding": "b",
+                "on": []
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "b",
+                "d"
+            ],
+            "on-table": [
+                "c",
+                "d"
+            ],
+            "arm-empty": false,
+            "holding": "a",
+            "on": [
+                [
+                    "b",
+                    "c"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "b",
+                    "d",
+                    "a"
+                ],
+                "on-table": [
+                    "c",
+                    "d",
+                    "a"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "d",
+                    "a"
+                ],
+                "on-table": [
+                    "c",
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ],
+                    [
+                        "a",
+                        "b"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "b",
+                    "a"
+                ],
+                "on-table": [
+                    "c",
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ],
+                    [
+                        "a",
+                        "d"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "a",
+                "d"
+            ],
+            "on-table": [
+                "b",
+                "c"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "a",
+                    "b"
+                ],
+                [
+                    "d",
+                    "c"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "d",
+                    "b"
+                ],
+                "on-table": [
+                    "b",
+                    "c"
+                ],
+                "arm-empty": false,
+                "holding": "a",
+                "on": [
+                    [
+                        "d",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "a",
+                    "c"
+                ],
+                "on-table": [
+                    "b",
+                    "c"
+                ],
+                "arm-empty": false,
+                "holding": "d",
+                "on": [
+                    [
+                        "a",
+                        "b"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "d",
+                "b"
+            ],
+            "on-table": [
+                "b",
+                "c"
+            ],
+            "arm-empty": false,
+            "holding": "a",
+            "on": [
+                [
+                    "d",
+                    "c"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "d",
+                    "b",
+                    "a"
+                ],
+                "on-table": [
+                    "b",
+                    "c",
+                    "a"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "d",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "b",
+                    "a"
+                ],
+                "on-table": [
+                    "b",
+                    "c"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "d",
+                        "c"
+                    ],
+                    [
+                        "a",
+                        "d"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "d",
+                    "a"
+                ],
+                "on-table": [
+                    "b",
+                    "c"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "d",
+                        "c"
+                    ],
+                    [
+                        "a",
+                        "b"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "b"
+            ],
+            "on-table": [
+                "a"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "b",
+                    "c"
+                ],
+                [
+                    "c",
+                    "d"
+                ],
+                [
+                    "d",
+                    "a"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "c"
+                ],
+                "on-table": [
+                    "a"
+                ],
+                "arm-empty": false,
+                "holding": "b",
+                "on": [
+                    [
+                        "c",
+                        "d"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "c"
+            ],
+            "on-table": [
+                "a"
+            ],
+            "arm-empty": false,
+            "holding": "b",
+            "on": [
+                [
+                    "c",
+                    "d"
+                ],
+                [
+                    "d",
+                    "a"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "c",
+                    "b"
+                ],
+                "on-table": [
+                    "a",
+                    "b"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "c",
+                        "d"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "b"
+                ],
+                "on-table": [
+                    "a"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "c",
+                        "d"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ],
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "d"
+            ],
+            "on-table": [
+                "b"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "c",
+                    "b"
+                ],
+                [
+                    "d",
+                    "a"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "a"
+                ],
+                "on-table": [
+                    "b"
+                ],
+                "arm-empty": false,
+                "holding": "d",
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "a"
+            ],
+            "on-table": [
+                "b"
+            ],
+            "arm-empty": false,
+            "holding": "d",
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "c",
+                    "b"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "a",
+                    "d"
+                ],
+                "on-table": [
+                    "b",
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "d"
+                ],
+                "on-table": [
+                    "b"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "c",
+                "d"
+            ],
+            "on-table": [
+                "a",
+                "d"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "b",
+                    "a"
+                ],
+                [
+                    "c",
+                    "b"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "c"
+                ],
+                "on-table": [
+                    "a"
+                ],
+                "arm-empty": false,
+                "holding": "d",
+                "on": [
+                    [
+                        "b",
+                        "a"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "d",
+                    "b"
+                ],
+                "on-table": [
+                    "a",
+                    "d"
+                ],
+                "arm-empty": false,
+                "holding": "c",
+                "on": [
+                    [
+                        "b",
+                        "a"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "c"
+            ],
+            "on-table": [
+                "a"
+            ],
+            "arm-empty": false,
+            "holding": "d",
+            "on": [
+                [
+                    "b",
+                    "a"
+                ],
+                [
+                    "c",
+                    "b"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "c",
+                    "d"
+                ],
+                "on-table": [
+                    "a",
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "a"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "d"
+                ],
+                "on-table": [
+                    "a"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "a"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ],
+                    [
+                        "d",
+                        "c"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "d"
+            ],
+            "on-table": [
+                "b"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "c",
+                    "b"
+                ],
+                [
+                    "d",
+                    "a"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "a"
+                ],
+                "on-table": [
+                    "b"
+                ],
+                "arm-empty": false,
+                "holding": "d",
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "a"
+            ],
+            "on-table": [
+                "b"
+            ],
+            "arm-empty": false,
+            "holding": "d",
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "c",
+                    "b"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "a",
+                    "d"
+                ],
+                "on-table": [
+                    "b",
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "d"
+                ],
+                "on-table": [
+                    "b"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "a",
+                        "c"
+                    ],
+                    [
+                        "c",
+                        "b"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "a"
+            ],
+            "on-table": [
+                "c"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "a",
+                    "d"
+                ],
+                [
+                    "b",
+                    "c"
+                ],
+                [
+                    "d",
+                    "b"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "d"
+                ],
+                "on-table": [
+                    "c"
+                ],
+                "arm-empty": false,
+                "holding": "a",
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ],
+                    [
+                        "d",
+                        "b"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "d"
+            ],
+            "on-table": [
+                "c"
+            ],
+            "arm-empty": false,
+            "holding": "a",
+            "on": [
+                [
+                    "b",
+                    "c"
+                ],
+                [
+                    "d",
+                    "b"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "d",
+                    "a"
+                ],
+                "on-table": [
+                    "c",
+                    "a"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ],
+                    [
+                        "d",
+                        "b"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "a"
+                ],
+                "on-table": [
+                    "c"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ],
+                    [
+                        "d",
+                        "b"
+                    ],
+                    [
+                        "a",
+                        "d"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "a",
+                "b",
+                "d"
+            ],
+            "on-table": [
+                "a",
+                "c",
+                "d"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "b",
+                    "c"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "b",
+                    "d"
+                ],
+                "on-table": [
+                    "c",
+                    "d"
+                ],
+                "arm-empty": false,
+                "holding": "a",
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "a",
+                    "b"
+                ],
+                "on-table": [
+                    "a",
+                    "c"
+                ],
+                "arm-empty": false,
+                "holding": "d",
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "a",
+                    "d",
+                    "c"
+                ],
+                "on-table": [
+                    "a",
+                    "c",
+                    "d"
+                ],
+                "arm-empty": false,
+                "holding": "b",
+                "on": []
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "b",
+                "d"
+            ],
+            "on-table": [
+                "c",
+                "d"
+            ],
+            "arm-empty": false,
+            "holding": "a",
+            "on": [
+                [
+                    "b",
+                    "c"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "b",
+                    "d",
+                    "a"
+                ],
+                "on-table": [
+                    "c",
+                    "d",
+                    "a"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "d",
+                    "a"
+                ],
+                "on-table": [
+                    "c",
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ],
+                    [
+                        "a",
+                        "b"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "b",
+                    "a"
+                ],
+                "on-table": [
+                    "c",
+                    "d"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "b",
+                        "c"
+                    ],
+                    [
+                        "a",
+                        "d"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "b",
+                "c"
+            ],
+            "on-table": [
+                "a",
+                "b"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "c",
+                    "d"
+                ],
+                [
+                    "d",
+                    "a"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "c"
+                ],
+                "on-table": [
+                    "a"
+                ],
+                "arm-empty": false,
+                "holding": "b",
+                "on": [
+                    [
+                        "c",
+                        "d"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "b",
+                    "d"
+                ],
+                "on-table": [
+                    "a",
+                    "b"
+                ],
+                "arm-empty": false,
+                "holding": "c",
+                "on": [
+                    [
+                        "d",
+                        "a"
+                    ]
+                ]
+            }
+        ]
+    },
+    {
+        "state": {
+            "clear": [
+                "c"
+            ],
+            "on-table": [
+                "a"
+            ],
+            "arm-empty": false,
+            "holding": "b",
+            "on": [
+                [
+                    "c",
+                    "d"
+                ],
+                [
+                    "d",
+                    "a"
+                ]
+            ]
+        },
+        "successors": [
+            {
+                "clear": [
+                    "c",
+                    "b"
+                ],
+                "on-table": [
+                    "a",
+                    "b"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "c",
+                        "d"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ]
+                ]
+            },
+            {
+                "clear": [
+                    "b"
+                ],
+                "on-table": [
+                    "a"
+                ],
+                "arm-empty": true,
+                "holding": null,
+                "on": [
+                    [
+                        "c",
+                        "d"
+                    ],
+                    [
+                        "d",
+                        "a"
+                    ],
+                    [
+                        "b",
+                        "c"
+                    ]
+                ]
+            }
+        ]
+    }
+]

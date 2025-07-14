@@ -1,0 +1,88 @@
+
+AutoToS prompt:
+
+This domain models the classic Sokoban game, where the robot needs to move around and push stones to specific locations while adhering to the constraints defined by the walls in the maze. 
+The maze is defined by a grid of values 0,1, and 2, where 2 means it is a goal location for a stone, 1 means the cell is blocked, and either 0 or 2 means that the cell can be occupied. A cell is clear if it can be occupied, but is not occupied by either the player or any stone.
+
+The actions are:
+
+move: This action moves the player in a specified direction. To perform this action, the target location must be clear and adjacent to player's location. Performing this action will result in the player being at the target location and no longer at the starting location, meaning the starting location is now clear, while the target location is now not clear.
+
+push: This action allows the player to push a stone in a specified direction. To perform this action, the player's location, the stone location, and the target location must line up in the same direction, and the target location must be clear. Performing the action results in player being at the stone's initial location and the stone is at the target location. Further, the player's previous location is clear, while the target location is not clear.
+
+Assume that states are defined by a dictionary with keys at-player and at-stone. 
+Here is an example of a state
+{'at-player': (4, 4), 'at-stone': [(2, 2), (3, 3)]}
+Here is an example of the grid:
+[[1, 1, 1, 1, 0, 0, 0, 0], [1, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 1, 0, 0, 1], [1, 1, 0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 2, 2, 0, 1], [0, 0, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1, 1, 1]]
+
+Provide a Python implementation of successor states function, receiving a state and a grid and returning a list of immediate successor states.
+
+Model response:
+```python
+def sokoban_successor_states(state, grid):
+    def is_clear(cell):
+        r, c = cell
+        if grid[r][c] == 1:
+            return False
+        if cell == state['at-player']:
+            return False
+        if cell in state['at-stone']:
+            return False
+        return True
+    
+    def move_player(new_loc):
+        new_state = state.copy()
+        new_state['at-player'] = new_loc
+        return new_state
+    
+    def push_stone(stone_idx, stone_new_loc):
+        new_state = state.copy()
+        new_state['at-player'] = state['at-stone'][stone_idx]
+        new_stones = state['at-stone'][:]
+        new_stones[stone_idx] = stone_new_loc
+        new_state['at-stone'] = new_stones
+        return new_state
+    
+    successors = []
+    player_loc = state['at-player']
+    directions = {'up': (-1, 0), 'down': (1, 0), 'left': (0, -1), 'right': (0, 1)}
+    
+    for direction, (dr, dc) in directions.items():
+        new_player_loc = (player_loc[0] + dr, player_loc[1] + dc)
+        
+        if is_clear(new_player_loc):
+            successors.append(move_player(new_player_loc))
+        
+        for i, stone in enumerate(state['at-stone']):
+            if (player_loc[0] + dr, player_loc[1] + dc) == stone:
+                stone_new_loc = (stone[0] + dr, stone[1] + dc)
+                if is_clear(stone_new_loc):
+                    successors.append(push_stone(i, stone_new_loc))
+    
+    return successors
+```
+
+AutoToS prompt:
+
+    Provide only the python code that tests whether a state is a goal state for a given goal configuration. Assume that the goal configuration is provided by the 2-dimensional array as before. The function should receive a state and the 2-dimensional array and return True if the state is a goal state and False otherwise.
+    
+Model response:
+```python
+def is_goal_state(state, grid):
+    for stone in state['at-stone']:
+        r, c = stone
+        if grid[r][c] != 2:
+            return False
+    return True
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Total success: 11, failure: 0, total expansions 764128, total generated 1956111

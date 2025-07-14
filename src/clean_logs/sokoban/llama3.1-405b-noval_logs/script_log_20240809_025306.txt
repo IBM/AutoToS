@@ -1,0 +1,129 @@
+
+AutoToS prompt:
+
+This domain models the classic Sokoban game, where the robot needs to move around and push stones to specific locations while adhering to the constraints defined by the walls in the maze. 
+The maze is defined by a grid of values 0,1, and 2, where 2 means it is a goal location for a stone, 1 means the cell is blocked, and either 0 or 2 means that the cell can be occupied. A cell is clear if it can be occupied, but is not occupied by either the player or any stone.
+
+The actions are:
+
+move: This action moves the player in a specified direction. To perform this action, the target location must be clear and adjacent to player's location. Performing this action will result in the player being at the target location and no longer at the starting location, meaning the starting location is now clear, while the target location is now not clear.
+
+push: This action allows the player to push a stone in a specified direction. To perform this action, the player's location, the stone location, and the target location must line up in the same direction, and the target location must be clear. Performing the action results in player being at the stone's initial location and the stone is at the target location. Further, the player's previous location is clear, while the target location is not clear.
+
+Assume that states are defined by a dictionary with keys at-player and at-stone. 
+Here is an example of a state
+{'at-player': (4, 4), 'at-stone': [(2, 2), (3, 3)]}
+Here is an example of the grid:
+[[1, 1, 1, 1, 0, 0, 0, 0], [1, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 1, 0, 0, 1], [1, 1, 0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 2, 2, 0, 1], [0, 0, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1, 1, 1]]
+
+Provide a Python implementation of successor states function, receiving a state and a grid and returning a list of immediate successor states.
+
+Model response:
+Successor States Function Implementation
+Python
+```
+def successor_states(state, grid):
+    """
+    Returns a list of immediate successor states given a state and a grid.
+
+    :param state: A dictionary with keys 'at-player' and 'at-stone'
+    :param grid: A 2D list representing the maze
+    :return: A list of successor states
+    """
+    # Define possible movements (up, down, left, right)
+    movements = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+
+    # Initialize successor states list
+    successor_states = []
+
+    # Get player and stone locations from state
+    player_location = state['at-player']
+    stone_locations = state['at-stone']
+
+    # Iterate over possible movements
+    for movement in movements:
+        # Calculate new player location
+        new_player_location = (player_location[0] + movement[0], player_location[1] + movement[1])
+
+        # Check if new player location is within grid boundaries and is clear
+        if (0 <= new_player_location[0] < len(grid)) and (0 <= new_player_location[1] < len(grid[0])) and (grid[new_player_location[0]][new_player_location[1]] != 1):
+            # Check if new player location is occupied by a stone
+            if new_player_location in stone_locations:
+                # Calculate new stone location
+                new_stone_location = (new_player_location[0] + movement[0], new_player_location[1] + movement[1])
+
+                # Check if new stone location is within grid boundaries and is clear
+                if (0 <= new_stone_location[0] < len(grid)) and (0 <= new_stone_location[1] < len(grid[0])) and (grid[new_stone_location[0]][new_stone_location[1]] != 1) and (new_stone_location not in stone_locations):
+                    # Create new state with updated player and stone locations
+                    new_state = {
+                        'at-player': new_player_location,
+                        'at-stone': [new_stone_location if location == new_player_location else location for location in stone_locations]
+                    }
+                    successor_states.append(new_state)
+            else:
+                # Create new state with updated player location
+                new_state = {
+                    'at-player': new_player_location,
+                    'at-stone': stone_locations
+                }
+                successor_states.append(new_state)
+
+    return successor_states
+Example Usage
+Python
+# Define grid and state
+grid = [[1, 1, 1, 1, 0, 0, 0, 0], [1, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 1, 0, 0, 1], [1, 1, 0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 2, 2, 0, 1], [0, 0, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1, 1, 1]]
+state = {'at-player': (4, 4), 'at-stone': [(2, 2), (3, 3)]}
+
+# Get successor states
+successor_states_list = successor_states(state, grid)
+
+# Print successor states
+for i, successor_state in enumerate(successor_states_list):
+    print(f"Successor State {i+1}: {successor_state}")
+```
+This implementation should provide the correct successor states for the given state and grid. Note that this is a basic implementation and may not cover all edge cases. You may need to modify it to fit your specific use case.
+Generated by Meta Llama 3.1-405
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state for a given goal configuration. Assume that the goal configuration is provided by the 2-dimensional array as before. The function should receive a state and the 2-dimensional array and return True if the state is a goal state and False otherwise.
+
+Model response:
+Goal State Checker Function
+Python
+```
+def is_goal_state(state, grid):
+    """
+    Checks if a state is a goal state given a grid.
+
+    :param state: A dictionary with keys 'at-player' and 'at-stone'
+    :param grid: A 2D list representing the maze
+    :return: True if the state is a goal state, False otherwise
+    """
+    stone_locations = state['at-stone']
+    for stone_location in stone_locations:
+        if grid[stone_location[0]][stone_location[1]] != 2:
+            return False
+    return True
+```
+Example Usage
+Python
+# Define grid and state
+grid = [[1, 1, 1, 1, 0, 0, 0, 0], [1, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 1, 0, 0, 1], [1, 1, 0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 2, 2, 0, 1], [0, 0, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1, 1, 1]]
+state = {'at-player': (4, 4), 'at-stone': [(5, 4), (5, 5)]}
+
+# Check if state is a goal state
+is_goal = is_goal_state(state, grid)
+print(f"Is goal state: {is_goal}")
+Generated by Meta Llama 3.1-405
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Total success: 11, failure: 0, total expansions 763750, total generated 1955669

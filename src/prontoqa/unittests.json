@@ -1,0 +1,54 @@
+{
+    "example_pool": [
+        {
+            "question": "Each lepidopteran is an insect. Each arthropod is a protostome. Every animal is multicellular. Protostomes are invertebrates. Each whale is bony. Each painted lady is a butterfly. Invertebrates are animals. Butterflies are lepidopterans. Every insect is six-legged. Every insect is an arthropod. Arthropods are not bony. Sally is a painted lady.",
+            "query": "True or false: Sally is not bony.",
+            "chain_of_thought": [
+                "Sally is a painted lady.",
+                "Each painted lady is a butterfly.",
+                "Sally is a butterfly.",
+                "Butterflies are lepidopterans.",
+                "Sally is a lepidopteran.",
+                "Each lepidopteran is an insect.",
+                "Sally is an insect.",
+                "Every insect is an arthropod.",
+                "Sally is an arthropod.",
+                "Arthropods are not bony.",
+                "Sally is not bony."
+            ],
+            "answer": "True"
+        },
+        {
+            "question": "Prime numbers are natural numbers. Every Mersenne prime is not composite. Imaginary numbers are not real. Every real number is a number. Natural numbers are integers. Every real number is real. Every Mersenne prime is a prime number. Natural numbers are positive. Prime numbers are not composite. Integers are real numbers. 127 is a Mersenne prime.",
+            "query": "True or false: 127 is not real.",
+            "chain_of_thought": [
+                "127 is a Mersenne prime.",
+                "Every Mersenne prime is a prime number.",
+                "127 is a prime number.",
+                "Prime numbers are natural numbers.",
+                "127 is a natural number.",
+                "Natural numbers are integers.",
+                "127 is an integer.",
+                "Integers are real numbers.",
+                "127 is a real number.",
+                "Every real number is real.",
+                "127 is real."
+            ],
+            "answer": "False"
+        },
+        {
+            "question": "Lepidopterans are insects. Every animal is multicellular. Each insect is an arthropod. Each invertebrate is an animal. Insects are six-legged. Arthropods are small. Arthropods are invertebrates. Each butterfly is a lepidopteran. Whales are not small. Polly is a lepidopteran.",
+            "query": "True or false: Polly is not small.",
+            "chain_of_thought": [
+                "Polly is a lepidopteran.",
+                "Lepidopterans are insects.",
+                "Polly is an insect.",
+                "Each insect is an arthropod.",
+                "Polly is an arthropod.",
+                "Arthropods are small.",
+                "Polly is small."
+            ],
+            "answer": "False"
+        }
+   ]
+}

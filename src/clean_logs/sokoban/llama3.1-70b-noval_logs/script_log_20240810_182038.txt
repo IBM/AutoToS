@@ -1,0 +1,159 @@
+
+AutoToS prompt:
+
+This domain models the classic Sokoban game, where the robot needs to move around and push stones to specific locations while adhering to the constraints defined by the walls in the maze. 
+The maze is defined by a grid of values 0,1, and 2, where 2 means it is a goal location for a stone, 1 means the cell is blocked, and either 0 or 2 means that the cell can be occupied. A cell is clear if it can be occupied, but is not occupied by either the player or any stone.
+
+The actions are:
+
+move: This action moves the player in a specified direction. To perform this action, the target location must be clear and adjacent to player's location. Performing this action will result in the player being at the target location and no longer at the starting location, meaning the starting location is now clear, while the target location is now not clear.
+
+push: This action allows the player to push a stone in a specified direction. To perform this action, the player's location, the stone location, and the target location must line up in the same direction, and the target location must be clear. Performing the action results in player being at the stone's initial location and the stone is at the target location. Further, the player's previous location is clear, while the target location is not clear.
+
+Assume that states are defined by a dictionary with keys at-player and at-stone. 
+Here is an example of a state
+{'at-player': (4, 4), 'at-stone': [(2, 2), (3, 3)]}
+Here is an example of the grid:
+[[1, 1, 1, 1, 0, 0, 0, 0], [1, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 1, 0, 0, 1], [1, 1, 0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 2, 2, 0, 1], [0, 0, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1, 1, 1]]
+
+Provide a Python implementation of successor states function, receiving a state and a grid and returning a list of immediate successor states.
+
+Model response:
+Here is a Python implementation of the successor states function:
+Python
+```
+def get_successor_states(state, grid):
+    import copy
+    successor_states = []
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    player_x, player_y = state['at-player']
+    stones = state['at-stone']
+
+    def is_valid(x, y):
+        return 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] != 1
+
+    for dx, dy in directions:
+        new_player_x, new_player_y = player_x + dx, player_y + dy
+        if is_valid(new_player_x, new_player_y):
+            new_state = copy.deepcopy(state)
+            new_state['at-player'] = (new_player_x, new_player_y)
+            successor_states.append(new_state)
+
+            for i, (stone_x, stone_y) in enumerate(stones):
+                if (stone_x, stone_y) == (new_player_x - dx, new_player_y - dy):
+                    new_stone_x, new_stone_y = new_player_x, new_player_y
+                    if is_valid(new_stone_x, new_stone_y):
+                        new_state = copy.deepcopy(state)
+                        new_state['at-player'] = (stone_x, stone_y)
+                        new_state['at-stone'][i] = (new_stone_x, new_stone_y)
+                        successor_states.append(new_state)
+
+    return successor_states
+``
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state for a given goal configuration. Assume that the goal configuration is provided by the 2-dimensional array as before. The function should receive a state and the 2-dimensional array and return True if the state is a goal state and False otherwise.
+
+Model response:
+Here is the Python code that tests whether a state is a goal state:
+Python
+```
+def is_goal_state(state, goal_grid):
+    stones = state['at-stone']
+    for x in range(len(goal_grid)):
+        for y in range(len(goal_grid[0])):
+            if goal_grid[x][y] == 2 and (x, y) not in stones:
+                return False
+    return True
+``
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Iteration 1
+
+AutoToS prompt:
+Error occurred for grid configuration: [[1, 1, 1, 1, 1, 1], [1, 0, 0, 2, 0, 1], [1, 0, 1, 0, 0, 1], [1, 0, 0, 0, 0, 1], [1, 0, 1, 2, 1, 1], [1, 0, 0, 0, 1, 0], [1, 1, 1, 1, 1, 0]]
+Successor function when run on the state {'at-player': (5, 3), 'at-stone': [(5, 2), (4, 3)]} failed to produce all successors.
+Missing successors are: [{'at-player': (5, 2), 'at-stone': [(5, 1), (4, 3)]}]
+First think step by step why the successor function failed to produce all successors of the state.
+Then, fix the successor function.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Model response:
+The successor function failed to produce all successors because it only checks for push actions when the player is trying to move into a stone's location. However, it doesn't check for push actions when the player is already at the same location as the stone.
+Here's the corrected successor function:
+Python
+```
+def get_successor_states(state, grid):
+    import copy
+    successor_states = []
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    player_x, player_y = state['at-player']
+    stones = state['at-stone']
+
+    def is_valid(x, y):
+        return 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] != 1
+
+    for dx, dy in directions:
+        new_player_x, new_player_y = player_x + dx, player_y + dy
+        if is_valid(new_player_x, new_player_y):
+            new_state = copy.deepcopy(state)
+            new_state['at-player'] = (new_player_x, new_player_y)
+            successor_states.append(new_state)
+
+            for i, (stone_x, stone_y) in enumerate(stones):
+                if (stone_x, stone_y) == (new_player_x, new_player_y) or (stone_x, stone_y) == (player_x, player_y):
+                    new_stone_x, new_stone_y = new_player_x + dx, new_player_y + dy
+                    if is_valid(new_stone_x, new_stone_y):
+                        new_state = copy.deepcopy(state)
+                        new_state['at-player'] = (stone_x, stone_y)
+                        new_state['at-stone'][i] = (new_stone_x, new_stone_y)
+                        successor_states.append(new_state)
+
+    return successor_states
+``
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Found solution of length 20, optimal: 49
+Grid [[1, 1, 1, 1, 0, 0, 0, 0], [1, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 1, 0, 0, 1], [1, 1, 0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 2, 2, 0, 1], [0, 0, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1, 1, 1]]
+[{'at-player': (4, 4), 'at-stone': [(2, 2), (3, 3)]}, {'at-player': (4, 3), 'at-stone': [(2, 2), (3, 3)]}, {'at-player': (3, 3), 'at-stone': [(2, 2), (2, 3)]}, {'at-player': (2, 3), 'at-stone': [(2, 2), (2, 3)]}, {'at-player': (2, 3), 'at-stone': [(2, 2), (4, 3)]}, {'at-player': (2, 2), 'at-stone': [(2, 2), (4, 3)]}, {'at-player': (2, 2), 'at-stone': [(4, 2), (4, 3)]}, {'at-player': (3, 2), 'at-stone': [(4, 2), (4, 3)]}, {'at-player': (4, 2), 'at-stone': [(4, 2), (4, 3)]}, {'at-player': (4, 2), 'at-stone': [(4, 4), (4, 3)]}, {'at-player': (4, 3), 'at-stone': [(4, 4), (4, 3)]}, {'at-player': (4, 3), 'at-stone': [(4, 4), (4, 5)]}, {'at-player': (4, 4), 'at-stone': [(4, 5), (4, 5)]}, {'at-player': (4, 5), 'at-stone': [(4, 5), (4, 5)]}, {'at-player': (3, 5), 'at-stone': [(4, 5), (4, 5)]}, {'at-player': (4, 5), 'at-stone': [(5, 5), (4, 5)]}, {'at-player': (3, 5), 'at-stone': [(5, 5), (4, 5)]}, {'at-player': (4, 5), 'at-stone': [(5, 5), (5, 5)]}, {'at-player': (4, 6), 'at-stone': [(5, 5), (5, 5)]}, {'at-player': (5, 6), 'at-stone': [(5, 5), (5, 5)]}, {'at-player': (5, 5), 'at-stone': [(5, 4), (5, 5)]}]
+Found solution of length 13, optimal: 35
+Grid [[1, 0, 1, 1, 1, 1, 1], [0, 0, 1, 0, 0, 0, 1], [1, 1, 1, 0, 0, 2, 1], [1, 0, 0, 0, 0, 0, 1], [1, 0, 0, 1, 0, 2, 1], [1, 0, 0, 1, 0, 0, 1], [1, 1, 1, 1, 1, 1, 1]]
+[{'at-player': (5, 2), 'at-stone': [(3, 2), (4, 2)]}, {'at-player': (4, 2), 'at-stone': [(3, 2), (3, 2)]}, {'at-player': (4, 1), 'at-stone': [(3, 2), (3, 2)]}, {'at-player': (3, 1), 'at-stone': [(3, 2), (3, 2)]}, {'at-player': (3, 2), 'at-stone': [(3, 3), (3, 2)]}, {'at-player': (3, 2), 'at-stone': [(3, 3), (3, 4)]}, {'at-player': (3, 3), 'at-stone': [(3, 3), (3, 4)]}, {'at-player': (3, 3), 'at-stone': [(3, 5), (3, 4)]}, {'at-player': (3, 4), 'at-stone': [(3, 5), (3, 5)]}, {'at-player': (3, 5), 'at-stone': [(3, 5), (3, 5)]}, {'at-player': (4, 5), 'at-stone': [(3, 5), (3, 5)]}, {'at-player': (3, 5), 'at-stone': [(2, 5), (3, 5)]}, {'at-player': (2, 5), 'at-stone': [(2, 5), (3, 5)]}, {'at-player': (3, 5), 'at-stone': [(2, 5), (4, 5)]}]
+Found solution of length 3, optimal: 51
+Grid [[1, 1, 1, 1, 1, 1], [1, 0, 0, 2, 0, 1], [1, 0, 1, 0, 0, 1], [1, 0, 0, 0, 0, 1], [1, 0, 1, 2, 1, 1], [1, 0, 0, 0, 1, 0], [1, 1, 1, 1, 1, 0]]
+[{'at-player': (5, 3), 'at-stone': [(3, 3), (4, 3)]}, {'at-player': (4, 3), 'at-stone': [(3, 3), (4, 3)]}, {'at-player': (3, 3), 'at-stone': [(3, 3), (4, 3)]}, {'at-player': (3, 3), 'at-stone': [(1, 3), (4, 3)]}]
+Found solution of length 39, optimal: 107
+Grid [[1, 1, 1, 1, 1, 1], [1, 0, 0, 0, 0, 1], [1, 0, 0, 0, 0, 1], [1, 0, 0, 0, 0, 1], [1, 0, 0, 1, 1, 1], [1, 1, 0, 2, 1, 0], [0, 1, 0, 2, 1, 0], [1, 1, 0, 2, 1, 0], [1, 0, 0, 0, 1, 0], [1, 0, 1, 0, 1, 0], [1, 0, 0, 0, 1, 0], [1, 1, 1, 1, 1, 0]]
+[{'at-player': (10, 2), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (10, 3), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (9, 3), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (8, 3), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (8, 2), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (7, 2), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (6, 2), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (5, 2), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (4, 2), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (3, 2), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (3, 3), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (3, 4), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (2, 4), 'at-stone': [(2, 2), (3, 2), (2, 3)]}, {'at-player': (2, 3), 'at-stone': [(2, 2), (3, 2), (2, 2)]}, {'at-player': (2, 2), 'at-stone': [(2, 2), (3, 2), (2, 2)]}, {'at-player': (2, 2), 'at-stone': [(4, 2), (3, 2), (2, 2)]}, {'at-player': (2, 2), 'at-stone': [(4, 2), (3, 2), (4, 2)]}, {'at-player': (3, 2), 'at-stone': [(4, 2), (4, 2), (4, 2)]}, {'at-player': (4, 2), 'at-stone': [(5, 2), (4, 2), (4, 2)]}, {'at-player': (4, 2), 'at-stone': [(5, 2), (6, 2), (4, 2)]}, {'at-player': (4, 2), 'at-stone': [(5, 2), (6, 2), (6, 2)]}, {'at-player': (5, 2), 'at-stone': [(6, 2), (6, 2), (6, 2)]}, {'at-player': (6, 2), 'at-stone': [(7, 2), (6, 2), (6, 2)]}, {'at-player': (6, 2), 'at-stone': [(7, 2), (8, 2), (6, 2)]}, {'at-player': (6, 2), 'at-stone': [(7, 2), (8, 2), (8, 2)]}, {'at-player': (7, 2), 'at-stone': [(8, 2), (8, 2), (8, 2)]}, {'at-player': (8, 2), 'at-stone': [(8, 2), (8, 2), (8, 2)]}, {'at-player': (8, 1), 'at-stone': [(8, 2), (8, 2), (8, 2)]}, {'at-player': (8, 2), 'at-stone': [(8, 3), (8, 2), (8, 2)]}, {'at-player': (8, 1), 'at-stone': [(8, 3), (8, 2), (8, 2)]}, {'at-player': (8, 2), 'at-stone': [(8, 3), (8, 3), (8, 2)]}, {'at-player': (8, 1), 'at-stone': [(8, 3), (8, 3), (8, 2)]}, {'at-player': (8, 2), 'at-stone': [(8, 3), (8, 3), (8, 3)]}, {'at-player': (8, 3), 'at-stone': [(8, 3), (8, 3), (8, 3)]}, {'at-player': (9, 3), 'at-stone': [(8, 3), (8, 3), (8, 3)]}, {'at-player': (8, 3), 'at-stone': [(7, 3), (8, 3), (8, 3)]}, {'at-player': (8, 3), 'at-stone': [(7, 3), (6, 3), (8, 3)]}, {'at-player': (8, 3), 'at-stone': [(7, 3), (6, 3), (6, 3)]}, {'at-player': (7, 3), 'at-stone': [(7, 3), (6, 3), (6, 3)]}, {'at-player': (6, 3), 'at-stone': [(7, 3), (5, 3), (6, 3)]}]
+Found solution of length 3, optimal: 35
+Grid [[0, 1, 1, 1, 1, 1, 0], [1, 1, 0, 2, 0, 1, 1], [1, 0, 0, 2, 0, 0, 1], [1, 0, 0, 2, 0, 0, 1], [1, 1, 0, 0, 1, 1, 1], [0, 1, 0, 0, 1, 0, 0], [0, 1, 1, 1, 1, 0, 0]]
+[{'at-player': (5, 3), 'at-stone': [(2, 3), (3, 3), (4, 3)]}, {'at-player': (4, 3), 'at-stone': [(2, 3), (3, 3), (3, 3)]}, {'at-player': (3, 3), 'at-stone': [(2, 3), (3, 3), (3, 3)]}, {'at-player': (3, 3), 'at-stone': [(2, 3), (1, 3), (3, 3)]}]
+Found solution of length 20, optimal: 69
+Grid [[0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1], [1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 1], [1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 2, 0, 0, 1], [0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1], [0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0], [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0]]
+[{'at-player': (4, 1), 'at-stone': [(4, 2), (3, 9), (5, 9)]}, {'at-player': (4, 2), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (4, 3), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (4, 4), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (4, 5), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (4, 6), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (4, 7), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (4, 8), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (4, 9), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (5, 9), 'at-stone': [(4, 3), (3, 9), (5, 9)]}, {'at-player': (5, 9), 'at-stone': [(4, 3), (3, 9), (5, 11)]}, {'at-player': (4, 9), 'at-stone': [(4, 3), (3, 9), (5, 11)]}, {'at-player': (3, 9), 'at-stone': [(4, 3), (3, 9), (5, 11)]}, {'at-player': (3, 9), 'at-stone': [(4, 3), (3, 11), (5, 11)]}, {'at-player': (3, 10), 'at-stone': [(4, 3), (3, 11), (5, 11)]}, {'at-player': (3, 11), 'at-stone': [(4, 3), (3, 12), (5, 11)]}, {'at-player': (3, 12), 'at-stone': [(4, 3), (3, 12), (5, 11)]}, {'at-player': (3, 12), 'at-stone': [(4, 3), (3, 10), (5, 11)]}, {'at-player': (4, 12), 'at-stone': [(4, 3), (3, 10), (5, 11)]}, {'at-player': (5, 12), 'at-stone': [(4, 3), (3, 10), (5, 11)]}, {'at-player': (5, 11), 'at-stone': [(4, 3), (3, 10), (5, 10)]}]
+Found solution of length 19, optimal: 95
+Grid [[0, 1, 1, 1, 1, 0, 0, 0, 0], [1, 1, 0, 0, 1, 0, 0, 0, 0], [1, 0, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 2, 2, 2, 2, 1], [1, 0, 0, 0, 1, 1, 0, 0, 1], [1, 1, 1, 1, 1, 0, 0, 1, 1], [0, 0, 0, 0, 1, 0, 0, 1, 0], [0, 0, 0, 0, 1, 0, 0, 1, 0], [0, 0, 0, 0, 1, 1, 1, 1, 0]]
+[{'at-player': (7, 5), 'at-stone': [(4, 2), (3, 3), (4, 3), (7, 6)]}, {'at-player': (7, 6), 'at-stone': [(4, 2), (3, 3), (4, 3), (7, 6)]}, {'at-player': (7, 6), 'at-stone': [(4, 2), (3, 3), (4, 3), (5, 6)]}, {'at-player': (6, 6), 'at-stone': [(4, 2), (3, 3), (4, 3), (5, 6)]}, {'at-player': (5, 6), 'at-stone': [(4, 2), (3, 3), (4, 3), (4, 6)]}, {'at-player': (4, 6), 'at-stone': [(4, 2), (3, 3), (4, 3), (4, 6)]}, {'at-player': (4, 5), 'at-stone': [(4, 2), (3, 3), (4, 3), (4, 6)]}, {'at-player': (4, 4), 'at-stone': [(4, 2), (3, 3), (4, 3), (4, 6)]}, {'at-player': (4, 3), 'at-stone': [(4, 2), (3, 3), (4, 3), (4, 6)]}, {'at-player': (4, 3), 'at-stone': [(4, 2), (3, 3), (4, 5), (4, 6)]}, {'at-player': (3, 3), 'at-stone': [(4, 2), (3, 3), (4, 5), (4, 6)]}, {'at-player': (2, 3), 'at-stone': [(4, 2), (3, 3), (4, 5), (4, 6)]}, {'at-player': (3, 3), 'at-stone': [(4, 2), (4, 3), (4, 5), (4, 6)]}, {'at-player': (3, 2), 'at-stone': [(4, 2), (4, 3), (4, 5), (4, 6)]}, {'at-player': (4, 2), 'at-stone': [(4, 2), (4, 3), (4, 5), (4, 6)]}, {'at-player': (4, 2), 'at-stone': [(4, 4), (4, 3), (4, 5), (4, 6)]}, {'at-player': (4, 3), 'at-stone': [(4, 4), (4, 4), (4, 5), (4, 6)]}, {'at-player': (4, 4), 'at-stone': [(4, 5), (4, 4), (4, 5), (4, 6)]}, {'at-player': (4, 5), 'at-stone': [(4, 5), (4, 4), (4, 5), (4, 6)]}, {'at-player': (4, 5), 'at-stone': [(4, 7), (4, 4), (4, 5), (4, 6)]}]
+Found solution of length 16, optimal: 76
+Grid [[0, 0, 0, 1, 1, 1, 1, 0, 0], [0, 0, 0, 1, 0, 0, 1, 0, 0], [1, 1, 1, 1, 0, 0, 1, 0, 0], [1, 0, 0, 0, 2, 0, 1, 1, 1], [1, 0, 0, 2, 0, 2, 0, 0, 1], [1, 1, 1, 0, 2, 0, 0, 0, 1], [0, 0, 1, 0, 0, 1, 1, 1, 1], [0, 0, 1, 0, 0, 1, 0, 0, 0], [0, 0, 1, 1, 1, 1, 0, 0, 0]]
+[{'at-player': (4, 4), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 5)]}, {'at-player': (4, 5), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 5)]}, {'at-player': (4, 6), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 5)]}, {'at-player': (5, 6), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 5)]}, {'at-player': (5, 5), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 4)]}, {'at-player': (5, 4), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 4)]}, {'at-player': (5, 3), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 4)]}, {'at-player': (6, 3), 'at-stone': [(3, 3), (5, 3), (3, 5), (5, 4)]}, {'at-player': (5, 3), 'at-stone': [(3, 3), (4, 3), (3, 5), (5, 4)]}, {'at-player': (4, 3), 'at-stone': [(3, 3), (4, 3), (3, 5), (5, 4)]}, {'at-player': (4, 2), 'at-stone': [(3, 3), (4, 3), (3, 5), (5, 4)]}, {'at-player': (3, 2), 'at-stone': [(3, 3), (4, 3), (3, 5), (5, 4)]}, {'at-player': (3, 3), 'at-stone': [(3, 4), (4, 3), (3, 5), (5, 4)]}, {'at-player': (3, 4), 'at-stone': [(3, 4), (4, 3), (3, 5), (5, 4)]}, {'at-player': (3, 5), 'at-stone': [(3, 4), (4, 3), (3, 5), (5, 4)]}, {'at-player': (2, 5), 'at-stone': [(3, 4), (4, 3), (3, 5), (5, 4)]}, {'at-player': (3, 5), 'at-stone': [(3, 4), (4, 3), (4, 5), (5, 4)]}]
+Found solution of length 16, optimal: 83
+Grid [[1, 1, 1, 1, 1, 1, 1, 0], [1, 0, 0, 1, 0, 0, 1, 0], [1, 0, 0, 0, 0, 0, 1, 0], [1, 0, 0, 1, 2, 0, 1, 0], [1, 1, 0, 1, 2, 1, 1, 0], [1, 0, 0, 1, 2, 0, 1, 1], [1, 0, 0, 0, 0, 0, 0, 1], [1, 0, 0, 1, 0, 0, 0, 1], [1, 1, 1, 1, 1, 1, 1, 1]]
+[{'at-player': (2, 1), 'at-stone': [(2, 2), (4, 2), (2, 3)]}, {'at-player': (2, 2), 'at-stone': [(2, 2), (4, 2), (2, 3)]}, {'at-player': (2, 2), 'at-stone': [(2, 4), (4, 2), (2, 3)]}, {'at-player': (3, 2), 'at-stone': [(2, 4), (4, 2), (2, 3)]}, {'at-player': (4, 2), 'at-stone': [(2, 4), (4, 2), (2, 3)]}, {'at-player': (4, 2), 'at-stone': [(2, 4), (2, 2), (2, 3)]}, {'at-player': (3, 2), 'at-stone': [(2, 4), (2, 2), (2, 3)]}, {'at-player': (2, 2), 'at-stone': [(2, 4), (2, 2), (2, 3)]}, {'at-player': (2, 2), 'at-stone': [(2, 4), (2, 4), (2, 3)]}, {'at-player': (2, 3), 'at-stone': [(2, 4), (2, 4), (2, 4)]}, {'at-player': (2, 4), 'at-stone': [(2, 4), (2, 4), (2, 4)]}, {'at-player': (2, 4), 'at-stone': [(4, 4), (2, 4), (2, 4)]}, {'at-player': (2, 4), 'at-stone': [(4, 4), (4, 4), (2, 4)]}, {'at-player': (1, 4), 'at-stone': [(4, 4), (4, 4), (2, 4)]}, {'at-player': (2, 4), 'at-stone': [(4, 4), (4, 4), (3, 4)]}, {'at-player': (3, 4), 'at-stone': [(4, 4), (4, 4), (3, 4)]}, {'at-player': (4, 4), 'at-stone': [(5, 4), (4, 4), (3, 4)]}]
+Found solution of length 17, optimal: 92
+Grid [[0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0], [1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0], [1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1], [1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1], [1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 1], [1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1], [1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1], [0, 0, 0, 0, 1, 0, 0, 0, 2, 1, 0], [0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]]
+[{'at-player': (5, 5), 'at-stone': [(4, 5), (6, 5), (7, 8)]}, {'at-player': (6, 5), 'at-stone': [(4, 5), (6, 5), (7, 8)]}, {'at-player': (7, 5), 'at-stone': [(4, 5), (6, 5), (7, 8)]}, {'at-player': (6, 5), 'at-stone': [(4, 5), (5, 5), (7, 8)]}, {'at-player': (5, 5), 'at-stone': [(4, 5), (5, 5), (7, 8)]}, {'at-player': (5, 6), 'at-stone': [(4, 5), (5, 5), (7, 8)]}, {'at-player': (5, 5), 'at-stone': [(4, 5), (5, 4), (7, 8)]}, {'at-player': (4, 5), 'at-stone': [(4, 5), (5, 4), (7, 8)]}, {'at-player': (3, 5), 'at-stone': [(4, 5), (5, 4), (7, 8)]}, {'at-player': (4, 5), 'at-stone': [(5, 5), (5, 4), (7, 8)]}, {'at-player': (5, 5), 'at-stone': [(5, 5), (5, 4), (7, 8)]}, {'at-player': (5, 5), 'at-stone': [(5, 7), (5, 4), (7, 8)]}, {'at-player': (5, 6), 'at-stone': [(5, 7), (5, 4), (7, 8)]}, {'at-player': (5, 7), 'at-stone': [(5, 8), (5, 4), (7, 8)]}, {'at-player': (5, 8), 'at-stone': [(5, 8), (5, 4), (7, 8)]}, {'at-player': (5, 8), 'at-stone': [(5, 6), (5, 4), (7, 8)]}, {'at-player': (6, 8), 'at-stone': [(5, 6), (5, 4), (7, 8)]}, {'at-player': (7, 8), 'at-stone': [(5, 6), (5, 4), (8, 8)]}]
+Found solution of length 7, optimal: 429
+Grid [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1], [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1], [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1], [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1], [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1], [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1], [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+[{'at-player': (3, 15), 'at-stone': [(2, 14)]}, {'at-player': (2, 15), 'at-stone': [(2, 14)]}, {'at-player': (2, 14), 'at-stone': [(2, 14)]}, {'at-player': (2, 13), 'at-stone': [(2, 14)]}, {'at-player': (2, 14), 'at-stone': [(2, 15)]}, {'at-player': (2, 15), 'at-stone': [(2, 15)]}, {'at-player': (3, 15), 'at-stone': [(2, 15)]}, {'at-player': (2, 15), 'at-stone': [(1, 15)]}]
+Total success: 0, failure: 11, total expansions 500873, total generated 1724729

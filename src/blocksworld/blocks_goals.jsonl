@@ -1,0 +1,83 @@
+[
+    {
+        "state": {
+            "clear": [
+                "b"
+            ],
+            "on-table": [
+                "d"
+            ],
+            "arm-empty": true,
+            "holding": null,
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "b",
+                    "a"
+                ],
+                [
+                    "c",
+                    "d"
+                ]
+            ]
+        },
+        "goal": {
+            "clear": [
+            ],
+            "on-table": [
+            ],
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "b",
+                    "a"
+                ],
+                [
+                    "c",
+                    "d"
+                ]
+            ]
+        }
+    },
+    {
+        "state": {
+            "clear": [
+                "a"
+            ],
+            "on-table": [
+                "d"
+            ],
+            "arm-empty": false,
+            "holding": "b",
+            "on": [
+                [
+                    "a",
+                    "c"
+                ],
+                [
+                    "c",
+                    "d"
+                ]
+            ]
+        },
+        "goal": 
+            {
+            "clear": [
+            ],
+            "on-table": [
+            ],
+            "on": [
+                [
+                    "a",
+                    "c"
+                ]
+            ]
+        }
+    }
+]

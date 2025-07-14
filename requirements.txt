@@ -1,0 +1,4 @@
+openai==1.93.1
+python-dotenv
+inflect
+datetime

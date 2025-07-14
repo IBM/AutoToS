@@ -1,0 +1,184 @@
+
+AutoToS prompt:
+
+I am playing with a set of blocks where I need to arrange the blocks into stacks. Here are the actions I can do
+   Pick up a block from the table
+   Put down a block on the table
+   Unstack a block from on top of another block
+   Stack a block on top of another block
+
+   I have the following restrictions on my actions:
+   I can only pick up or unstack one block at a time.
+   I can only pick up or unstack a block if my hand is empty.
+   I can only pick up a block if the block is on the table and the block is clear. A block is clear if the block has no other blocks on top of it and if the block is not picked up.
+   I can only unstack a block from on top of another block if the block I am unstacking was really on top of the other block.
+   I can only unstack a block from on top of another block if the block I am unstacking is clear.
+   Once I pick up a block, I am holding the block and it is no longer clear and no longer on the table. 
+   Once I unstack from on top of another block, I am holding the block and it is no longer clear. Instead, the other block becomes clear.   
+
+   I can only put down a block that I am holding.
+   I can only stack a block on top of another block if I am holding the block being stacked.
+   I can only stack a block on top of another block if the block onto which I am stacking the block is clear.
+   Once I put down a block, my hand becomes empty, the block becomes clear, and it is now on the table.
+   Once I stack a block on top of another block, the block on top becomes clear and the block under it is no longer clear.
+If a state is defined by a dictionary of following predicates "clear block", "on-table block", "arm-empty", "holding block", and "on block1 block2", how are successor states defined? 
+Here is an example of the initial state:
+Init: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+Please provide only the Python code for the successor function that returns a list of successor states.
+
+Model response:
+```python
+def successor_states(state):
+    def pick_up(block, current_state):
+        new_state = current_state.copy()
+        new_state['clear'] = [b for b in new_state['clear'] if b != block]
+        new_state['on-table'] = [b for b in new_state['on-table'] if b != block]
+        new_state['holding'] = block
+        new_state['arm-empty'] = False
+        return new_state
+
+    def put_down(block, current_state):
+        new_state = current_state.copy()
+        new_state['clear'].append(block)
+        new_state['on-table'].append(block)
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        return new_state
+
+    def unstack(block1, block2, current_state):
+        new_state = current_state.copy()
+        new_state['on'] = [pair for pair in new_state['on'] if pair != (block1, block2)]
+        new_state['clear'].append(block2)
+        new_state['clear'] = [b for b in new_state['clear'] if b != block1]
+        new_state['holding'] = block1
+        new_state['arm-empty'] = False
+        return new_state
+
+    def stack(block1, block2, current_state):
+        new_state = current_state.copy()
+        new_state['on'].append((block1, block2))
+        new_state['clear'] = [b for b in new_state['clear'] if b != block2]
+        new_state['clear'].append(block1)
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        return new_state
+
+    successors = []
+    if state['arm-empty']:
+        for block in state['clear']:
+            if block in state['on-table']:
+                successors.append(pick_up(block, state))
+            else:
+                for block1, block2 in state['on']:
+                    if block1 == block:
+                        successors.append(unstack(block1, block2, state))
+    else:
+        holding = state['holding']
+        successors.append(put_down(holding, state))
+        for block in state['clear']:
+            successors.append(stack(holding, block, state))
+
+    return successors
+```
+
+AutoToS prompt:
+
+    Provide only the python code that tests whether a state is a goal state. The goal specifies a partial state, the facts that must be true in any full goal state. Assume that the goal configuration is provided in the same dictionary format. 
+    Here's an example goal specification:
+    Goal: {'clear': [], 'on-table': [], 'on': [('b', 'c'), ('d', 'b')]}
+    
+Model response:
+```python
+def is_goal_state(state, goal):
+    for key in goal:
+        if key == 'on' and goal[key]:
+            for pair in goal[key]:
+                if pair not in state['on']:
+                    return False
+        elif key in {'clear', 'on-table'}:
+            for block in goal[key]:
+                if block not in state[key]:
+                    return False
+        else:
+            if state[key] != goal[key]:
+                return False
+    return True
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+Successor Iteration 1
+
+AutoToS prompt:
+Input state should not change as a result of applying the successor function.
+State before successor function applied: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+State after successor function applied: {'clear': ['b', 'a', 'c', 'd'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+Let's think step by step. First, think of the possible reasons why the input state may change as a result of applying the successor function, such as the use of shallow copy.
+Then, provide the complete Python code for the revised successor function that returns a list of successor states and ensure it does not change the input state.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Model response:
+```python
+def successor_states(state):
+    import copy
+
+    def pick_up(block, current_state):
+        new_state = copy.deepcopy(current_state)
+        new_state['clear'].remove(block)
+        new_state['on-table'].remove(block)
+        new_state['holding'] = block
+        new_state['arm-empty'] = False
+        return new_state
+
+    def put_down(block, current_state):
+        new_state = copy.deepcopy(current_state)
+        new_state['clear'].append(block)
+        new_state['on-table'].append(block)
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        return new_state
+
+    def unstack(block1, block2, current_state):
+        new_state = copy.deepcopy(current_state)
+        new_state['on'].remove((block1, block2))
+        new_state['clear'].append(block2)
+        new_state['clear'].remove(block1)
+        new_state['holding'] = block1
+        new_state['arm-empty'] = False
+        return new_state
+
+    def stack(block1, block2, current_state):
+        new_state = copy.deepcopy(current_state)
+        new_state['on'].append((block1, block2))
+        new_state['clear'].remove(block2)
+        new_state['clear'].append(block1)
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        return new_state
+
+    successors = []
+    cloned_state = copy.deepcopy(state)
+    if cloned_state['arm-empty']:
+        for block in cloned_state['clear']:
+            if block in cloned_state['on-table']:
+                successors.append(pick_up(block, cloned_state))
+            else:
+                for block1, block2 in cloned_state['on']:
+                    if block1 == block:
+                        successors.append(unstack(block1, block2, cloned_state))
+    else:
+        holding = cloned_state['holding']
+        successors.append(put_down(holding, cloned_state))
+        for block in cloned_state['clear']:
+            successors.append(stack(holding, block, cloned_state))
+
+    return successors
+```
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Evaluating the final outcome
+Success: 502, failure: 0, total expansions 50783, total generated 131063

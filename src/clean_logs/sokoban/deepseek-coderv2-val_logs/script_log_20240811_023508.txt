@@ -1,0 +1,128 @@
+
+AutoToS prompt:
+
+This domain models the classic Sokoban game, where the robot needs to move around and push stones to specific locations while adhering to the constraints defined by the walls in the maze. 
+The maze is defined by a grid of values 0,1, and 2, where 2 means it is a goal location for a stone, 1 means the cell is blocked, and either 0 or 2 means that the cell can be occupied. A cell is clear if it can be occupied, but is not occupied by either the player or any stone.
+
+The actions are:
+
+move: This action moves the player in a specified direction. To perform this action, the target location must be clear and adjacent to player's location. Performing this action will result in the player being at the target location and no longer at the starting location, meaning the starting location is now clear, while the target location is now not clear.
+
+push: This action allows the player to push a stone in a specified direction. To perform this action, the player's location, the stone location, and the target location must line up in the same direction, and the target location must be clear. Performing the action results in player being at the stone's initial location and the stone is at the target location. Further, the player's previous location is clear, while the target location is not clear.
+
+Assume that states are defined by a dictionary with keys at-player and at-stone. 
+Here is an example of a state
+{'at-player': (4, 4), 'at-stone': [(2, 2), (3, 3)]}
+Here is an example of the grid:
+[[1, 1, 1, 1, 0, 0, 0, 0], [1, 0, 0, 1, 1, 0, 0, 0], [1, 0, 0, 0, 1, 1, 1, 1], [1, 0, 0, 0, 1, 0, 0, 1], [1, 1, 0, 0, 0, 0, 0, 1], [0, 1, 1, 1, 2, 2, 0, 1], [0, 0, 0, 1, 0, 1, 0, 1], [0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1, 1, 1]]
+
+Provide a Python implementation of successor states function, receiving a state and a grid and returning a list of immediate successor states.
+
+Model response:
+To implement the successor states function for the Sokoban game, we need to consider both the `move` and `push` actions. The function will take the current state and the grid as inputs and return a list of possible successor states based on the allowed actions.
+
+Here's the Python implementation:
+
+python
+```
+def successor_states(state, grid):
+    def is_clear(x, y):
+        return 0 <= x < len(grid) and 0 <= y < len(grid[0]) and grid[x][y] in [0, 2] and (x, y) not in state['at-stone']
+
+    def move_player(dx, dy):
+        x, y = state['at-player']
+        new_x, new_y = x + dx, y + dy
+        if is_clear(new_x, new_y):
+            new_state = state.copy()
+            new_state['at-player'] = (new_x, new_y)
+            return new_state
+        return None
+
+    def push_stone(dx, dy):
+        x, y = state['at-player']
+        new_x, new_y = x + dx, y + dy
+        if (new_x, new_y) in state['at-stone']:
+            stone_new_x, stone_new_y = new_x + dx, new_y + dy
+            if is_clear(stone_new_x, stone_new_y):
+                new_state = state.copy()
+                new_state['at-player'] = (new_x, new_y)
+                new_state['at-stone'] = [(sx, sy) if (sx, sy) != (new_x, new_y) else (stone_new_x, stone_new_y) for sx, sy in new_state['at-stone']]
+                return new_state
+        return None
+
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Right, Down, Left, Up
+    successors = []
+
+    for dx, dy in directions:
+        # Try to move the player
+        new_state = move_player(dx, dy)
+        if new_state:
+            successors.append(new_state)
+        
+        # Try to push a stone
+        new_state = push_stone(dx, dy)
+        if new_state:
+            successors.append(new_state)
+
+    return successors
+
+# Example usage:
+state = {'at-player': (4, 4), 'at-stone': [(2, 2), (3, 3)]}
+grid = [
+    [1, 1, 1, 1, 0, 0, 0, 0],
+    [1, 0, 0, 1, 1, 0, 0, 0],
+    [1, 0, 0, 0, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1, 0, 0, 1],
+    [1, 1, 0, 0, 0, 0, 0, 1],
+    [0, 1, 1, 1, 2, 2, 0, 1],
+    [0, 0, 0, 1, 0, 1, 0, 1],
+    [0, 0, 0, 1, 0, 0, 0, 1],
+    [0, 0, 0, 1, 1, 1, 1, 1]
+]
+
+successors = successor_states(state, grid)
+for s in successors:
+    print(s)
+```
+
+This function defines two helper functions, `move_player` and `push_stone`, to handle the `move` and `push` actions, respectively. It then iterates over the possible directions and attempts to perform each action, collecting valid successor states in the `successors` list, which is returned at the end
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state for a given goal configuration. Assume that the goal configuration is provided by the 2-dimensional array as before. The function should receive a state and the 2-dimensional array and return True if the state is a goal state and False otherwise.
+
+Model response:
+python
+```
+def is_goal_state(state, grid):
+    for stone in state['at-stone']:
+        if grid[stone[0]][stone[1]] != 2:
+            return False
+    return True
+
+# Example usage:
+state = {'at-player': (4, 4), 'at-stone': [(5, 4), (5, 5)]}
+grid = [
+    [1, 1, 1, 1, 0, 0, 0, 0],
+    [1, 0, 0, 1, 1, 0, 0, 0],
+    [1, 0, 0, 0, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1, 0, 0, 1],
+    [1, 1, 0, 0, 0, 0, 0, 1],
+    [0, 1, 1, 1, 2, 2, 0, 1],
+    [0, 0, 0, 1, 0, 1, 0, 1],
+    [0, 0, 0, 1, 0, 0, 0, 1],
+    [0, 0, 0, 1, 1, 1, 1, 1]
+]
+
+print(is_goal_state(state, grid))  # Should return True
+``
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Total success: 11, failure: 0, total expansions 763076, total generated 1953949

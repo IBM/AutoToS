@@ -1,0 +1,257 @@
+
+AutoToS prompt:
+
+I am playing with a set of blocks where I need to arrange the blocks into stacks. Here are the actions I can do
+   Pick up a block from the table
+   Put down a block on the table
+   Unstack a block from on top of another block
+   Stack a block on top of another block
+
+   I have the following restrictions on my actions:
+   I can only pick up or unstack one block at a time.
+   I can only pick up or unstack a block if my hand is empty.
+   I can only pick up a block if the block is on the table and the block is clear. A block is clear if the block has no other blocks on top of it and if the block is not picked up.
+   I can only unstack a block from on top of another block if the block I am unstacking was really on top of the other block.
+   I can only unstack a block from on top of another block if the block I am unstacking is clear.
+   Once I pick up a block, I am holding the block and it is no longer clear and no longer on the table. 
+   Once I unstack from on top of another block, I am holding the block and it is no longer clear. Instead, the other block becomes clear.   
+
+   I can only put down a block that I am holding.
+   I can only stack a block on top of another block if I am holding the block being stacked.
+   I can only stack a block on top of another block if the block onto which I am stacking the block is clear.
+   Once I put down a block, my hand becomes empty, the block becomes clear, and it is now on the table.
+   Once I stack a block on top of another block, the block on top becomes clear and the block under it is no longer clear.
+If a state is defined by a dictionary of following predicates "clear block", "on-table block", "arm-empty", "holding block", and "on block1 block2", how are successor states defined? 
+Here is an example of the initial state:
+Init: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+Please provide only the Python code for the successor function that returns a list of successor states.
+
+Model response:
+```python
+def successor(state):
+    from collections import defaultdict
+
+    def can_pick_up(block):
+        return block in state['on-table'] and block in state['clear'] and state['arm-empty']
+    
+    def can_unstack(block1, block2):
+        return (block1, block2) in state['on'] and block1 in state['clear']
+    
+    def can_stack(block1, block2):
+        return block1 in state['holding'] and block2 in state['clear']
+    
+    successors = []
+
+    # 1. Pick up a clear block from the table
+    for block in state['on-table']:
+        if can_pick_up(block):
+            new_state = state.copy()
+            new_state['on-table'].remove(block)
+            new_state['holding'] = block
+            new_state['arm-empty'] = False
+            new_state['clear'].remove(block)
+            successors.append(new_state)
+
+    # 2. Unstack a block from on top of another block
+    for block1, block2 in state['on']:
+        if can_unstack(block1, block2):
+            new_state = state.copy()
+            new_state['holding'] = block1
+            new_state['arm-empty'] = False
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            new_state['on'].remove((block1, block2))
+            successors.append(new_state)
+
+    # 3. Put down the block being held onto the table
+    if state['holding']:
+        new_state = state.copy()
+        block = state['holding']
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        new_state['on-table'].append(block)
+        new_state['clear'].append(block)
+        successors.append(new_state)
+
+    # 4. Stack the block being held on top of a clear block
+    for block in state['clear']:
+        if block != state['holding']:
+            new_state = state.copy()
+            block_to_stack = state['holding']
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            new_state['on'].append((block_to_stack, block))
+            new_state['clear'].remove(block)
+            new_state['clear'].append(block_to_stack)
+            successors.append(new_state)
+
+    return successors
+```
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state. The goal specifies a partial state, the facts that must be true in any full goal state. Assume that the goal configuration is provided in the same dictionary format. 
+Here's an example goal specification:
+Goal: {'clear': [], 'on-table': [], 'on': [('b', 'c'), ('d', 'b')]}
+
+Model response:
+```python
+def is_goal(state, goal):
+    def matches(fact_list, goal_list):
+        return all(item in fact_list for item in goal_list)
+
+    return (matches(state['clear'], goal['clear']) and
+            matches(state['on-table'], goal['on-table']) and
+            matches(state['on'], goal['on']))
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+Successor Iteration 1
+
+AutoToS prompt:
+The following exception was produced when testing the successor function: 
+  File "autoToS/src/domain_base_class.py", line 145, in _str
+    val = sorted(val)
+          ^^^^^^^^^^^
+
+'<' not supported between instances of 'NoneType' and 'str'. Please fix this exception in the successor function.
+Model response:
+```python
+def successor(state):
+    from collections import defaultdict
+
+    def can_pick_up(block):
+        return block in state['on-table'] and block in state['clear'] and state['arm-empty']
+
+    def can_unstack(block1, block2):
+        return (block1, block2) in state['on'] and block1 in state['clear']
+
+    successors = []
+
+    # 1. Pick up a clear block from the table
+    for block in state['on-table']:
+        if can_pick_up(block):
+            new_state = state.copy()
+            new_state['on-table'].remove(block)
+            new_state['holding'] = block
+            new_state['arm-empty'] = False
+            new_state['clear'].remove(block)
+            successors.append(new_state)
+
+    # 2. Unstack a block from on top of another block
+    for block1, block2 in state['on']:
+        if can_unstack(block1, block2):
+            new_state = state.copy()
+            new_state['holding'] = block1
+            new_state['arm-empty'] = False
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            new_state['on'].remove((block1, block2))
+            successors.append(new_state)
+
+    # 3. Put down the block being held onto the table
+    if state['holding']:
+        new_state = state.copy()
+        block = state['holding']
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        new_state['on-table'].append(block)
+        new_state['clear'].append(block)
+        successors.append(new_state)
+
+    # 4. Stack the block being held on top of a clear block
+    for block in state['clear']:
+        if block != state['holding'] and state['holding'] is not None:
+            new_state = state.copy()
+            block_to_stack = state['holding']
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            new_state['on'].append((block_to_stack, block))
+            new_state['clear'].remove(block)
+            new_state['clear'].append(block_to_stack)
+            successors.append(new_state)
+
+    return successors
+```
+Successor Iteration 2
+
+AutoToS prompt:
+Input state should not change as a result of applying the successor function.
+State before successor function applied: {'clear': ['b'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('b', 'a'), ('c', 'd')]}
+State after successor function applied: {'clear': ['a'], 'on-table': ['d'], 'arm-empty': True, 'holding': None, 'on': [('a', 'c'), ('c', 'd')]}
+Let's think step by step. First, think of the possible reasons why the input state may change as a result of applying the successor function, such as the use of shallow copy.
+Then, provide the complete Python code for the revised successor function that returns a list of successor states and ensure it does not change the input state.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Model response:
+The issue of the input state changing as a result of applying the successor function is likely due to the use of a shallow copy. When we create a shallow copy of the dictionary, the lists within the dictionary (like `on-table`, `clear`, and `on`) are not copied deeply; instead, they are still references to the original lists. Thus, when we modify these lists in the new state, it also modifies them in the original state. 
+
+To avoid this, we need to create deep copies of any mutable elements (like lists and tuples) in the state. Here’s the revised successor function that ensures the input state does not change:
+
+```python
+def successor(state):
+    from collections import defaultdict
+    from copy import deepcopy
+
+    def can_pick_up(block):
+        return block in state['on-table'] and block in state['clear'] and state['arm-empty']
+
+    def can_unstack(block1, block2):
+        return (block1, block2) in state['on'] and block1 in state['clear']
+
+    successors = []
+
+    # 1. Pick up a clear block from the table
+    for block in state['on-table']:
+        if can_pick_up(block):
+            new_state = deepcopy(state)  # Deep copy to avoid side effects
+            new_state['on-table'].remove(block)
+            new_state['holding'] = block
+            new_state['arm-empty'] = False
+            new_state['clear'].remove(block)
+            successors.append(new_state)
+
+    # 2. Unstack a block from on top of another block
+    for block1, block2 in state['on']:
+        if can_unstack(block1, block2):
+            new_state = deepcopy(state)  # Deep copy to avoid side effects
+            new_state['holding'] = block1
+            new_state['arm-empty'] = False
+            new_state['clear'].remove(block1)
+            new_state['clear'].append(block2)
+            new_state['on'].remove((block1, block2))
+            successors.append(new_state)
+
+    # 3. Put down the block being held onto the table
+    if state['holding']:
+        new_state = deepcopy(state)  # Deep copy to avoid side effects
+        block = state['holding']
+        new_state['holding'] = None
+        new_state['arm-empty'] = True
+        new_state['on-table'].append(block)
+        new_state['clear'].append(block)
+        successors.append(new_state)
+
+    # 4. Stack the block being held on top of a clear block
+    for block in state['clear']:
+        if block != state['holding'] and state['holding'] is not None:
+            new_state = deepcopy(state)  # Deep copy to avoid side effects
+            block_to_stack = state['holding']
+            new_state['holding'] = None
+            new_state['arm-empty'] = True
+            new_state['on'].append((block_to_stack, block))
+            new_state['clear'].remove(block)
+            new_state['clear'].append(block_to_stack)
+            successors.append(new_state)
+
+    return successors
+```
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Evaluating the final outcome
+Success: 418, failure: 84, total expansions 102111, total generated 273070

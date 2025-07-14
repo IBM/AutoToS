@@ -1,0 +1,66 @@
+
+AutoToS prompt:
+
+The 24 Game is a mathematical card game in which the objective is to find a way to manipulate four integers so that the end result is 24. The game is played with a list of four numbers, and the player must use all four numbers exactly once, using any combination of addition, subtraction, multiplication, or division, to arrive at the number 24. If a state is defined by a list of numbers (4 or less), how are successor states defined? Please think step by step. Then, provide only the Python function that returns a list of successor states for an input state.
+
+Here is an example of an initial state:
+[6, 6, 2, 1]
+
+Model response:
+To generate successor states, we need to take every pair of numbers from the list, apply one of the four operations (addition, subtraction, multiplication, division), and generate a new state with the result of that operation and the remaining numbers. Here’s how to implement this:
+
+1. Iterate over all pairs of numbers in the list.
+2. For each pair, perform all valid operations.
+3. Generate new states with the result of the operation and the remaining numbers.
+4. Return the list of all possible new states.
+
+Here's the function:
+
+```python
+from itertools import permutations
+
+def generate_successor_states(state):
+    def valid_operations(a, b):
+        ops = [(a + b), (a - b), (b - a), (a * b)]
+        if b != 0:
+            ops.append(a / b)
+        if a != 0:
+            ops.append(b / a)
+        return ops
+
+    def generate_new_states(state):
+        n = len(state)
+        new_states = []
+
+        for i in range(n):
+            for j in range(i + 1, n):
+                for result in valid_operations(state[i], state[j]):
+                    new_state = [state[k] for k in range(n) if k != i and k != j] + [result]
+                    new_states.append(new_state)
+
+        return new_states
+
+    return generate_new_states(state)
+```
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state. 
+Example goal state: [24]
+Example non-goal state: [24,1]
+
+Model response:
+```python
+def is_goal_state(state):
+    return len(state) == 1 and state[0] == 24
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Success: 1352, failure: 0, total expansions 627424, total generated 2706100

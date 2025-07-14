@@ -1,0 +1,63 @@
+
+AutoToS prompt:
+
+Logical deduction is performed by applying rules of the form if X then Y to our current knowledge about a world, extending our knowledge with each single rule application. 
+A rule if X then Y is applicable if we know X. If a state is defined as our current knowledge of the world, how are successor states defined, given a collection of rules? Please think step by step. Then, provide only the Python implementation for the successor function that receives a state and rules and returns a list of successor states.
+
+Example initial state: {"integer"}
+Example rules: [("integer", "real number"), ("integer", "float")]
+
+Model response:
+Certainly! The successor function needs to apply each applicable rule to the state to generate new successor states. Below is the implementation that performs this task.
+
+```python
+def successor(state, rules):
+    """
+    Generate successor states by applying given rules to the current state.
+
+    :param state: A set representing the current knowledge about the world.
+    :param rules: A list of tuples representing rules in the form (X, Y) where if X is known, then Y can be deduced.
+    :return: A list of sets representing all possible successor states.
+    """
+    successors = []
+
+    for X, Y in rules:
+        if X in state:
+            new_state = state.copy()
+            new_state.add(Y)
+            if new_state != state:  # Make sure the new state is different from the current state
+                successors.append(new_state)
+
+    return successors
+```
+
+You can use this function by passing your current state and the list of rules to it. The function will then return all possible successor states that can be derived by applying the rules to the current state.
+
+AutoToS prompt:
+
+    Provide only the Python function for the goal test function that tests, given a target fact, whether a state is a goal state. 
+    
+Model response:
+Certainly! Below is the function for testing if a state is a goal state given a target fact.
+
+```python
+def is_goal_state(state, target_fact):
+    """
+    Determine if a given state is a goal state based on the target fact.
+
+    :param state: A set representing the current knowledge about the world.
+    :param target_fact: A fact to check for in the state.
+    :return: True if the target fact is in the state, False otherwise.
+    """
+    return target_fact in state
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Success: 4000, failure: 0, total expansions 88141, total evaluations 176892

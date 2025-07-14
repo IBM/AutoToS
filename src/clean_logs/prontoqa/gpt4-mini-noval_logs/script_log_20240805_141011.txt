@@ -1,0 +1,145 @@
+
+AutoToS prompt:
+
+Logical deduction is performed by applying rules of the form if X then Y to our current knowledge about a world, extending our knowledge with each single rule application. 
+A rule if X then Y is applicable if we know X. If a state is defined as our current knowledge of the world, how are successor states defined, given a collection of rules? Please think step by step. Then, provide only the Python implementation for the successor function that receives a state and rules and returns a list of successor states.
+
+Example initial state: {"integer"}
+Example rules: [("integer", "real number"), ("integer", "float")]
+
+Model response:
+```python
+def successor(state, rules):
+    def apply_rules(state, rules):
+        successors = set()
+        for x, y in rules:
+            if x in state:
+                successors.add(y)
+        return successors
+
+    return list(apply_rules(state, rules))
+```
+
+AutoToS prompt:
+
+Provide only the Python function for the goal test function that tests, given a target fact, whether a state is a goal state. 
+
+Model response:
+```python
+def is_goal_state(state, target_fact):
+    return target_fact in state
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Iteration 1
+
+AutoToS prompt:
+Successor function when run on the state {'painted lady'} failed to produce all successors.
+Missing successors are: [{'painted lady', 'butterfly'}]
+First think step by step why the successor function failed to produce all successors of the state.
+Then, fix the successor function.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+Rules: [('arthropod', 'protostome'), ('lepidopteran', 'insect'), ('painted lady', 'butterfly'), ('insect', 'arthropod'), ('invertebrate', 'animal'), ('arthropod', 'not-bony'), ('protostome', 'invertebrate'), ('whale', 'bony'), ('butterfly', 'lepidopteran'), ('animal', 'multicellular'), ('insect', 'six-legged')]
+
+Model response:
+```python
+def successor(state, rules):
+    def apply_rules(state, rules):
+        successors = set(state)  # Start with current state in successors
+        changes = True
+
+        while changes:  # Continue until no new successors are found
+            changes = False
+            new_successors = set()
+            for x, y in rules:
+                if x in successors and y not in successors:
+                    new_successors.add(y)
+                    changes = True
+            successors.update(new_successors)
+
+        return successors
+
+    return list(apply_rules(state, rules))
+```
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Iteration 2
+
+AutoToS prompt:
+Successor function when run on the state {'painted lady'} failed to produce all successors.
+Missing successors are: [{'painted lady', 'butterfly'}]
+First think step by step why the successor function failed to produce all successors of the state.
+Then, fix the successor function.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+Rules: [('arthropod', 'protostome'), ('lepidopteran', 'insect'), ('painted lady', 'butterfly'), ('insect', 'arthropod'), ('invertebrate', 'animal'), ('arthropod', 'not-bony'), ('protostome', 'invertebrate'), ('whale', 'bony'), ('butterfly', 'lepidopteran'), ('animal', 'multicellular'), ('insect', 'six-legged')]
+
+Model response:
+```python
+def successor(state, rules):
+    def apply_rules(state, rules):
+        successors = set(state)  # Start with the current state in successors
+        changes = True
+
+        while changes:  # Continue until no new successors are found
+            changes = False
+            new_successors = set()
+            for x, y in rules:
+                if x in successors and y not in successors:
+                    new_successors.add(y)
+                    changes = True
+            successors.update(new_successors)
+
+        return successors
+
+    return [tuple(successor) for successor in apply_rules(state, rules)]
+```
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Iteration 3
+
+AutoToS prompt:
+Successor function when run on the state {'painted lady'} failed to produce all successors.
+Missing successors are: [{'painted lady', 'butterfly'}]
+First think step by step why the successor function failed to produce all successors of the state.
+Then, fix the successor function.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+Rules: [('arthropod', 'protostome'), ('lepidopteran', 'insect'), ('painted lady', 'butterfly'), ('insect', 'arthropod'), ('invertebrate', 'animal'), ('arthropod', 'not-bony'), ('protostome', 'invertebrate'), ('whale', 'bony'), ('butterfly', 'lepidopteran'), ('animal', 'multicellular'), ('insect', 'six-legged')]
+
+Model response:
+```python
+def successor(state, rules):
+    def apply_rules(state, rules):
+        successors = set(state)  # Start with the current state in successors
+        changes = True
+
+        while changes:  # Continue until no new successors are found
+            changes = False
+            new_successors = set()
+            for x, y in rules:
+                if x in successors and y not in successors:
+                    new_successors.add(y)
+                    changes = True
+            successors.update(new_successors)
+
+        return successors
+
+    initial_successors = apply_rules(state, rules)
+    all_successors = [{*state, s} for s in initial_successors]  # Include all initial states with each successor
+    return list(all_successors)
+```
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Success: 4000, failure: 0, total expansions 897073, total evaluations 9156989

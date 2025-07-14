@@ -1,0 +1,63 @@
+
+AutoToS prompt:
+
+The 24 Game is a mathematical card game in which the objective is to find a way to manipulate four integers so that the end result is 24. The game is played with a list of four numbers, and the player must use all four numbers exactly once, using any combination of addition, subtraction, multiplication, or division, to arrive at the number 24. If a state is defined by a list of numbers (4 or less), how are successor states defined? Please think step by step. Then, provide only the Python function that returns a list of successor states for an input state.
+
+Here is an example of an initial state:
+[6, 6, 2, 1]
+
+Model response:
+To generate successor states for the given numbers, we need to perform all possible arithmetic operations (+, -, *, /) between any two numbers in the list. The result of each operation forms a new number, and we subtract the two original numbers from the list and add the new result. We continue doing this until we have fewer than two numbers left. Below is the Python function that returns a list of successor states for an input state.
+
+```python
+import itertools
+
+def successor_states(numbers):
+    def generate_successors(nums):
+        if len(nums) == 1:
+            return []
+        
+        successors = []
+        for i, j in itertools.combinations(range(len(nums)), 2):
+            remaining_nums = [nums[k] for k in range(len(nums)) if k != i and k != j]
+            x, y = nums[i], nums[j]
+
+            # Addition
+            successors.append(remaining_nums + [x + y])
+            # Subtraction (two ways)
+            successors.append(remaining_nums + [x - y])
+            successors.append(remaining_nums + [y - x])
+            # Multiplication
+            successors.append(remaining_nums + [x * y])
+            # Division (two ways, if not dividing by zero)
+            if y != 0:
+                successors.append(remaining_nums + [x / y])
+            if x != 0:
+                successors.append(remaining_nums + [y / x])
+
+        return successors
+
+    return generate_successors(numbers)
+```
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state. 
+Example goal state: [24]
+Example non-goal state: [24,1]
+
+Model response:
+```python
+def is_goal_state(state):
+    return len(state) == 1 and state[0] == 24
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Success: 1352, failure: 0, total expansions 627424, total generated 2706100

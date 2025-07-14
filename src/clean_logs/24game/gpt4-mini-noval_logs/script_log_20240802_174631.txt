@@ -1,0 +1,131 @@
+
+AutoToS prompt:
+
+The 24 Game is a mathematical card game in which the objective is to find a way to manipulate four integers so that the end result is 24. The game is played with a list of four numbers, and the player must use all four numbers exactly once, using any combination of addition, subtraction, multiplication, or division, to arrive at the number 24. If a state is defined by a list of numbers (4 or less), how are successor states defined? Please think step by step. Then, provide only the Python function that returns a list of successor states for an input state.
+
+Here is an example of an initial state:
+[6, 6, 2, 1]
+
+Model response:
+```python
+def successor_states(state):
+    from itertools import permutations
+    from operator import add, sub, mul, truediv
+
+    def calculate(a, b, operation):
+        if operation == add:
+            return a + b
+        elif operation == sub:
+            return a - b
+        elif operation == mul:
+            return a * b
+        elif operation == truediv:
+            if b != 0:
+                return a / b
+            return None
+
+    def generate_expressions(numbers):
+        if len(numbers) == 1:
+            yield numbers[0]
+        else:
+            for i in range(len(numbers)):
+                for j in range(len(numbers)):
+                    if i != j:
+                        remaining = [numbers[k] for k in range(len(numbers)) if k != i and k != j]
+                        for result in generate_expressions(remaining):
+                            for operation in (add, sub, mul, truediv):
+                                if operation == sub:
+                                    yield calculate(numbers[i], numbers[j], operation)
+                                elif operation == truediv:
+                                    if numbers[j] != 0:
+                                        yield calculate(numbers[i], numbers[j], operation)
+                                else:
+                                    yield calculate(numbers[i], numbers[j], operation)
+
+    successors = set()
+    for perm in permutations(state):
+        for value in generate_expressions(list(perm)):
+            if value is not None:
+                new_state = [v for v in perm if v not in {perm[0], perm[1]}]
+                if len(new_state) < 4:
+                    new_state.append(value)
+                    successors.add(tuple(sorted(new_state)))
+
+    return [list(s) for s in successors]
+```
+
+AutoToS prompt:
+
+Provide only the python code that tests whether a state is a goal state. 
+Example goal state: [24]
+Example non-goal state: [24,1]
+
+Model response:
+```python
+def is_goal_state(state):
+    return len(state) == 1 and state[0] == 24
+```
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Iteration 1
+
+AutoToS prompt:
+Successor function when run on the state [1, 1, 4, 6] failed to produce all successors.
+Missing successors are: [[1, 1, 10], [0.6666666666666666, 1, 1], [1, 4, 7], [-2, 1, 1], [-5, 1, 4], [1, 4, 6], [1, 1, 2], [1, 5, 6], [0.25, 1, 6], [-3, 1, 6], [0, 4, 6], [0.16666666666666666, 1, 4], [1, 1, 24], [1, 3, 6], [2, 4, 6], [1, 4, 5], [1, 1, 1.5]]
+First think step by step why the successor function failed to produce all successors of the state.
+Then, fix the successor function.
+Remember how you fixed the previous mistakes, if any. Keep the same function signature.
+
+Model response:
+The successor function likely failed to generate all successors of the state due to the limited handling of operational combinations and the omission of necessary states that can arise from expressions. The function needs to consider all possible permutations of the numbers for every operation regardless of the order of operations and evaluate all combinations to ensure that all results get added to the successor states.
+
+Here’s the updated function:
+
+```python
+def successor_states(state):
+    from itertools import permutations
+    from operator import add, sub, mul, truediv
+
+    def calculate(a, b, operation):
+        if operation == add:
+            return a + b
+        elif operation == sub:
+            return a - b
+        elif operation == mul:
+            return a * b
+        elif operation == truediv:
+            if b != 0:
+                return a / b
+            return None
+
+    successors = set()
+    n = len(state)
+
+    for perm in permutations(state):
+        # Generate all combinations of two numbers and combine with remaining numbers
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    a, b = perm[i], perm[j]
+                    remaining = [perm[k] for k in range(n) if k != i and k != j]
+                    
+                    for operation in (add, sub, mul, truediv):
+                        result = calculate(a, b, operation)
+                        if result is not None:
+                            new_state = remaining + [result]
+                            successors.add(tuple(sorted(new_state)))
+
+    return [list(s) for s in successors]
+```
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Success: 1352, failure: 0, total expansions 630318, total generated 2470303

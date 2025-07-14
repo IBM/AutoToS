@@ -1,0 +1,174 @@
+
+AutoToS prompt:
+
+The task is a 5x5 mini crosswords. A state is a 2D array representing the current puzzle state, where the initial grid is all "None". Note that some of the possible answers are not exactly 5 character long. Given an input of possible answers to horizontal clues and vertical clues, how is the successor state function defined? Please first think step by step. Then provide the successor state function in Python code. 
+
+The possible clues for each row and each column are given separately. Here is an example of possible horizontal and vertical clues:
+
+horizontal_answers = [
+        ["tasks", "goals", "plans", "agend", "chores", "works", "deeds", "items", "lists", "brief"],
+        ["motor", "power", "drive", "diesel", "steam", "pumps", "crank", "gears", "turbn", "motor"],
+        ["grand", "artsy", "showy", "ornate", "fancy", "vain", "proud", "vogue", "swank", "luxus"], 
+        ["venue", "salle", "forum", "atria", "lobby", "parls", "court", "malls", "mall", "lobby"], 
+        ["jeer", "scoff", "sleer", "deris", "sneer", "scorn", "derid", "gibes", "gibed", "flout"] 
+]
+vertical_answers = [
+        ["amass", "stack", "hoard", "pile", "store", "heaps", "massy", "gathe", "lumps", "mound"],
+        ["nilga", "goral", "eland", "lepus", "gazal", "kudu", "oryx", "gnu", "imps", "carb"],
+        ["scheme", "design", "ettle", "nettle", "sting", "wiles", "plans", "ideas", "plots", "cocks"], 
+        ["spout", "nosle", "snout", "mouth", "nostr", "ports", "inlet", "vents", "outlt", "beaks"], 
+        ["drier", "arid", "sere", "parch", "dryer", "wring", "drear", "sear", "pall", "lack"]
+]
+
+where horizontal_answers is a list where element i is a list of possible answers to clue in row i, and vertical_answers is a list where element i is a list of possible answers to clue in column i.
+
+Model response:
+To solve this problem step by step, we need to develop a function to generate a potential successor state of the crossword puzzle given the current state and possible horizontal and vertical answers. The function will fill the grid incrementally and generate the next state.
+
+Here's the approach we will take:
+1. Iterate through each cell in the current crossword grid.
+2. For each cell, identify the row and column it belongs to.
+3. Check the possible horizontal answers for the row and vertical answers for the column.
+4. Generate potential next states by filling in words that comply with the given constraints.
+5. Return a list of all valid next states.
+
+Let's include the necessary imports and define the function that addresses these steps:
+
+```python
+from copy import deepcopy
+
+def get_successor_states(grid, horizontal_answers, vertical_answers):
+    def validate_word(grid, word, r, c, direction):
+        if direction == 'horizontal':
+            if c + len(word) > len(grid[0]):
+                return False
+            for i, char in enumerate(word):
+                if grid[r][c + i] is not None and grid[r][c + i] != char:
+                    return False
+        elif direction == 'vertical':
+            if r + len(word) > len(grid):
+                return False
+            for i, char in enumerate(word):
+                if grid[r + i][c] is not None and grid[r + i][c] != char:
+                    return False
+        return True
+
+    def fill_word(grid, word, r, c, direction):
+        new_grid = deepcopy(grid)
+        if direction == 'horizontal':
+            for i, char in enumerate(word):
+                new_grid[r][c + i] = char
+        elif direction == 'vertical':
+            for i, char in enumerate(word):
+                new_grid[r + i][c] = char
+        return new_grid
+
+    n_rows, n_cols = len(grid), len(grid[0])
+    successor_states = []
+
+    for r in range(n_rows):
+        for c in range(n_cols):
+            if grid[r][c] is None:
+                # Try horizontal answers for row r
+                for word in horizontal_answers[r]:
+                    if validate_word(grid, word, r, c, 'horizontal'):
+                        new_state = fill_word(grid, word, r, c, 'horizontal')
+                        successor_states.append(new_state)
+                
+                # Try vertical answers for column c
+                for word in vertical_answers[c]:
+                    if validate_word(grid, word, r, c, 'vertical'):
+                        new_state = fill_word(grid, word, r, c, 'vertical')
+                        successor_states.append(new_state)
+    
+    return successor_states
+```
+
+This function `get_successor_states` does the following:
+1. Iterates over each cell in the grid.
+2. Validates the possible horizontal and vertical words at each position using `validate_word`.
+3. If valid, creates a new grid with the word filled in using `fill_word`.
+4. Collects and returns all possible successor states.
+
+This process should be repeated iteratively to explore all possible puzzle completions.
+
+AutoToS prompt:
+
+Please provide a goal test function in Python ensuring that all cells are not None, all words horizontally are matching at least one of the horizontal answers, and all words vertically match at least one of the vertical answers. The function should receive a state, horizontal_answers, and vertical_answers as before and return True for a goal state and False otherwise.
+
+Model response:
+To determine if the given state of the crossword puzzle is a goal state, we need to ensure the following conditions:
+1. All cells in the grid are filled (not `None`).
+2. Every horizontal word in the grid matches one of the possible horizontal answers.
+3. Every vertical word in the grid matches one of the possible vertical answers.
+
+Let's define this goal test function in Python:
+
+```python
+def is_goal_state(state, horizontal_answers, vertical_answers):
+    def get_word(state, start_r, start_c, direction):
+        word = []
+        if direction == 'horizontal':
+            while start_c < len(state[0]) and state[start_r][start_c] is not None:
+                word.append(state[start_r][start_c])
+                start_c += 1
+        elif direction == 'vertical':
+            while start_r < len(state) and state[start_r][start_c] is not None:
+                word.append(state[start_r][start_c])
+                start_r += 1
+        return ''.join(word)
+    
+    def check_all_cells_filled(state):
+        for row in state:
+            for cell in row:
+                if cell is None:
+                    return False
+        return True
+    
+    def check_words(state, answers, direction):
+        n_rows, n_cols = len(state), len(state[0])
+        if direction == 'horizontal':
+            for r in range(n_rows):
+                c = 0
+                while c < n_cols:
+                    if state[r][c] is not None:
+                        word = get_word(state, r, c, direction)
+                        if word not in answers[r]:
+                            return False
+                        c += len(word)
+                    else:
+                        c += 1
+        elif direction == 'vertical':
+            for c in range(n_cols):
+                r = 0
+                while r < n_rows:
+                    if state[r][c] is not None:
+                        word = get_word(state, r, c, direction)
+                        if word not in answers[c]:
+                            return False
+                        r += len(word)
+                    else:
+                        r += 1
+        return True
+    
+    return (check_all_cells_filled(state) and 
+            check_words(state, horizontal_answers, 'horizontal') and 
+            check_words(state, vertical_answers, 'vertical'))
+```
+
+This function `is_goal_state` performs the following steps:
+1. `get_word` extracts a word from the grid starting at a specific position and extending in the given direction (`horizontal` or `vertical`).
+2. `check_all_cells_filled` checks if all the cells in the grid are filled (none of them is `None`).
+3. `check_words` validates that each horizontal and vertical word in the grid matches one of the given answers for the respective rows or columns.
+4. `is_goal_state` combines these checks and returns `True` if the grid is fully filled and all words match the provided answers, otherwise returns `False`.
+
+System message:
+Goal Soundness Test Passed
+Soundness test
+
+System message:
+Successor States Soundness Test Passed
+Completeness test
+Successor Completeness Test Passed
+Evaluating the final outcome
+Success: 20, failure: 0, total expansions 4514757, total generated 16830232
