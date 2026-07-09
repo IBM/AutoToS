@@ -47,7 +47,7 @@ Key results:
 
 ## 🤖 Paper 2: *Automating Thought of Search: A Journey Towards Soundness and Completeness*
 
-The sequel by Cao et al. (2024) takes the vision further. Instead of relying on human-written examples or hand-crafted prompts, they present **AutoToS**, a system that automates the entire process. AutoToS leverages LLMs to:
+The sequel by Cao et al. (ICAPS 2026) takes the vision further. Instead of relying on human-written examples or hand-crafted prompts, they present **AutoToS**, a system that automates the entire process. AutoToS leverages LLMs to:
 
 * Generate candidate functions.
 * Evaluate them with **unit tests** derived from problem instances.
@@ -65,7 +65,9 @@ Key innovations:
 
 <br>
 
-🤖 Check out this [example interaction with an LLM](blog/chat.html)  &nbsp; &nbsp; &nbsp;     📖 Read the paper: [arXiv:2408.11326](https://arxiv.org/abs/2408.11326)   &nbsp; &nbsp; &nbsp;    💻 Explore the code: [GitHub – AutoToS](https://github.com/ibm/AutoToS)
+🤖 Check out this [example interaction with an LLM](blog/chat.html)  &nbsp; &nbsp; &nbsp;     📖 Read the paper: 
+<!-- [arXiv:2408.11326](https://arxiv.org/abs/2408.11326)-->
+[ICAPS 2026](https://ojs.aaai.org/index.php/ICAPS/article/view/42877) &nbsp; &nbsp; &nbsp;    💻 Explore the code: [GitHub – AutoToS](https://github.com/ibm/AutoToS)
 
 ---
 
