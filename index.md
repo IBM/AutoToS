@@ -65,9 +65,7 @@ Key innovations:
 
 <br>
 
-🤖 Check out this [example interaction with an LLM](blog/chat.html)  &nbsp; &nbsp; &nbsp;     📖 Read the paper: 
-<!-- [arXiv:2408.11326](https://arxiv.org/abs/2408.11326)-->
-[ICAPS 2026](https://ojs.aaai.org/index.php/ICAPS/article/view/42877) &nbsp; &nbsp; &nbsp;    💻 Explore the code: [GitHub – AutoToS](https://github.com/ibm/AutoToS)
+🤖 Check out this [example interaction with an LLM](blog/chat.html)  &nbsp; &nbsp; &nbsp;     📖 Read the paper: [ICAPS 2026](https://ojs.aaai.org/index.php/ICAPS/article/view/42877) &nbsp; &nbsp; &nbsp;    💻 Explore the code: [GitHub – AutoToS](https://github.com/ibm/AutoToS)
 
 ---
 
