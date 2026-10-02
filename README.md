@@ -72,7 +72,18 @@ You also can simply run all experiments consecutively with the `--domain all` op
                   Neural Information Processing Systems ({NeurIPS} 2024)",
   year =         "2024"
 }
-
+```
+and
+```
+@InProceedings{cao-et-al-icaps2026,
+  author =       "Daniel Cao and Michael Katz and Harsha Kokel and Kavitha Srinivas and Shirin Sohrabi",
+  title =        "Automating {T}hought of {S}earch: A Journey Towards Soundness and Completeness",
+  booktitle =    "Proceedings of the Thirty-Sixth International Conference on Automated Planning and Scheduling {(ICAPS) 2026}",
+  year =         "2026"
+}
+```
+or
+```
 @InProceedings{cao-et-al-neurips2024wsowa,
   author =       "Daniel Cao and Michael Katz and Harsha Kokel and Kavitha Srinivas and Shirin Sohrabi",
   title =        "Automating {T}hought of {S}earch: A Journey Towards Soundness and Completeness",
